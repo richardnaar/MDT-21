@@ -163,19 +163,19 @@ for i in range(max_lines):
 def find_points(dif, outlier):
     y_circles = [0]*4
     # outlier = 1
-    # while np.std(y_circles) < 0.025:
-    if dif:  # low=-0.15, high=-0.05, size=4
-        y_circles[0:4] = np.random.uniform(low=-0.1, high=0, size=4)
-        if outlier:
-            y_circles[3] = float(np.random.uniform(
-                low=0, high=0.1, size=1))
-        y_circles = (y_circles[0:4]-np.mean(y_circles))-0.05
-    else:
-        y_circles[0:4] = np.random.uniform(low=0, high=0.1, size=4)
-        if outlier:
-            y_circles[3] = float(np.random.uniform(
-                low=-0.1, high=0, size=1))
-        y_circles = (y_circles[0:4]-np.mean(y_circles))+0.05
+    while np.std(y_circles) < 0.025:
+        if dif:  # low=-0.15, high=-0.05, size=4
+            y_circles[0:4] = np.random.uniform(low=-0.1, high=0, size=4)
+            if outlier:
+                y_circles[3] = float(np.random.uniform(
+                    low=0, high=0.1, size=1))
+            y_circles = (y_circles[0:4]-np.mean(y_circles))-0.05
+        else:
+            y_circles[0:4] = np.random.uniform(low=0, high=0.1, size=4)
+            if outlier:
+                y_circles[3] = float(np.random.uniform(
+                    low=-0.1, high=0, size=1))
+            y_circles = (y_circles[0:4]-np.mean(y_circles))+0.05
     # y_circles = [-0.05]*4
     y_circles = [round(i, 2) for i in y_circles]
     y_circles = np.flip(np.sort(y_circles))
@@ -203,7 +203,7 @@ def draw_text(text2draw, textElement, click_next):
         if frameCount > 3:
             click_next.draw()
             textElement.draw()
-            win.flip()
+        win.flip()
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=expInfo['escape key'])
         frameCount += 1
