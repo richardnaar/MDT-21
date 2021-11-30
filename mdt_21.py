@@ -251,8 +251,8 @@ def prep_lines(n, col_list, dif, lines):
                 start[i] = [end[i-1][0], end[i-1][1]]
 
             # find the endpoint in a similar way
-            end[i] = [start[i][0] + length[i] *
-                      math.cos(angle[i]), start[i][1] + length[i]*math.sin(angle[i])]
+            end[i] = [round(start[i][0] + length[i] *
+                            math.cos(angle[i]), 2), round(start[i][1] + length[i]*math.sin(angle[i]), 2)]
 
             # check that the lines stay within the screen
             if abs(end[i][0]) < 0.4 and abs(end[i][1]) < 0.4 and abs(start[i][0]) < 0.4 and abs(start[i][1]) < 0.4:
@@ -265,8 +265,6 @@ def prep_lines(n, col_list, dif, lines):
                 repeatSearch = False
                 repsN = 0
         # redifine the lines
-        start = [round(i, 2) for i in start]
-        end = [round(i, 2) for i in end]
         lines[i].start, lines[i].end = start[i], end[i]
         lines[i].lineColor, lines[i].status = color, NOT_STARTED
     return lines, angle, start, end
