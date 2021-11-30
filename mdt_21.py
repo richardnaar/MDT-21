@@ -436,8 +436,6 @@ def feedback(xys_points, blockNum):
         elif sum(buttons) and hovering(click_next, mouse) and framesCount > 60*3:
             break
 
-
-for i in range(n_times):
     # this is the start of the experiment loop
     trialNumber = 0
     nTrials = len(xlsx_dic['blocks'])
@@ -473,5 +471,6 @@ for i in range(n_times):
 
         trialNumber += 1
         theseKeys = event.getKeys(keyList=expInfo['escape key'])
+
 
 win.close(), core.quit()
