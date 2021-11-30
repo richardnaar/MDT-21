@@ -81,7 +81,7 @@ random.shuffle(col_list)
 # normalize
 for i, k in enumerate(col_list):
     for j, l in enumerate(k):
-        col_list[i][j] = (l/255)*2 - 1
+        col_list[i][j] = round((l/255)*2 - 1, 2)
 
 default_text0 = visual.TextStim(win=win, name='text0',
                                 text='juku', font='Arial', pos=(0, 0),
@@ -124,6 +124,7 @@ gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
 gauss.pos, n_bars, ecc, ys = (-0.1, 0), 4, [0.1, 0.3], [0]*4
 ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
 ys[3] = float(np.random.uniform(low=-0.25, high=0, size=1))
+ys = [round(i, 2) for i in ys]
 random.shuffle(ys)
 
 if n_bars == 4:
@@ -176,6 +177,7 @@ def find_points(dif, outlier):
                 low=-0.1, high=0, size=1))
         y_circles = (y_circles[0:4]-np.mean(y_circles))+0.05
     # y_circles = [-0.05]*4
+    y_circles = [round(i, 2) for i in y_circles]
     y_circles = np.flip(np.sort(y_circles))
     return y_circles
 
@@ -237,8 +239,7 @@ def prep_lines(n, col_list, dif, lines):
     for i in range(n):
         within, repeatSearch, repsN = 0, False, 0
         while within == 0 or repeatSearch or repsN > 10:
-            deg10 = math.pi/180*0  # deg = rad/pi * 180
-            angle[i] = np.random.uniform(low=deg10, high=2*math.pi-deg10)
+            angle[i] = np.random.uniform(low=0, high=2*math.pi)
             length[i] = np.random.uniform(low=0.05, high=0.2)
 
             if i == 0:
@@ -264,6 +265,8 @@ def prep_lines(n, col_list, dif, lines):
                 repeatSearch = False
                 repsN = 0
         # redifine the lines
+        start = [round(i, 2) for i in start]
+        end = [round(i, 2) for i in end]
         lines[i].start, lines[i].end = start[i], end[i]
         lines[i].lineColor, lines[i].status = color, NOT_STARTED
     return lines, angle, start, end
@@ -399,7 +402,8 @@ def draw_routine(blockNum, lines):
             if expInfo['fb mode'] == 'type A':
                 xys_circles[yi][1] = y_circles[yi]
             else:
-                xys_circles[yi][1] = -7*(points[yi]-0.025)  # actual feedback
+                # actual feedback
+                xys_circles[yi][1] = round(-7*(points[yi]-0.025), 2)
     return xys_circles
 
 
