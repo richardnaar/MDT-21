@@ -436,41 +436,42 @@ def feedback(xys_points, blockNum):
         elif sum(buttons) and hovering(click_next, mouse) and framesCount > 60*3:
             break
 
-    # this is the start of the experiment loop
-    trialNumber = 0
-    nTrials = len(xlsx_dic['blocks'])
-    runExperiment = True
+
+# this is the start of the experiment loop
+trialNumber = 0
+nTrials = len(xlsx_dic['blocks'])
+runExperiment = True
+theseKeys = event.getKeys(keyList=expInfo['escape key'])
+while runExperiment and (len(theseKeys) < 1):
+    mouse = event.Mouse(win=win)
+    # if it is the end of the experiment loop
+    if trialNumber == nTrials:
+            # close and quit
+        runExperiment = False
+#        win.close(), core.quit()
+    # if it is not the end of the experiment yet
+    elif trialNumber < nTrials:
+        nSelfs = xlsx_dic['blocks'].nSelf[trialNumber]
+        intro_text = xlsx_dic['blocks'].intro_text_content[trialNumber]
+        draw_text(intro_text, txt_dic['def0'], click_next)
+        xys_points = draw_routine(trialNumber, lines)
+        feedback(xys_points, trialNumber)
+        brush.reset()
+        brush.status = NOT_STARTED
+        if nSelfs:
+            whichSelfs = xlsx_dic['blocks'].whichSelf[trialNumber]
+            starti, endi = int(whichSelfs[0]), int(whichSelfs[2])
+            for n, txt in enumerate(xlsx_dic['self_report'].item[starti:endi]):
+                low = xlsx_dic['self_report'].label_high[starti+n]
+                high = xlsx_dic['self_report'].label_low[starti+n]
+                vas.present(win, expInfo['escape key'], clock, visual, event,
+                            core, text_pos, txt, high, low)
+
+    # draw things here
+    win.flip()
+
+    trialNumber += 1
     theseKeys = event.getKeys(keyList=expInfo['escape key'])
-    while runExperiment and (len(theseKeys) < 1):
-        mouse = event.Mouse(win=win)
-        # if it is the end of the experiment loop
-        if trialNumber == nTrials:
-                # close and quit
-            runExperiment = False
-    #        win.close(), core.quit()
-        # if it is not the end of the experiment yet
-        elif trialNumber < nTrials:
-            nSelfs = xlsx_dic['blocks'].nSelf[trialNumber]
-            intro_text = xlsx_dic['blocks'].intro_text_content[trialNumber]
-            draw_text(intro_text, txt_dic['def0'], click_next)
-            xys_points = draw_routine(trialNumber, lines)
-            feedback(xys_points, trialNumber)
-            brush.reset()
-            brush.status = NOT_STARTED
-            if nSelfs:
-                whichSelfs = xlsx_dic['blocks'].whichSelf[trialNumber]
-                starti, endi = int(whichSelfs[0]), int(whichSelfs[2])
-                for n, txt in enumerate(xlsx_dic['self_report'].item[starti:endi]):
-                    low = xlsx_dic['self_report'].label_high[starti+n]
-                    high = xlsx_dic['self_report'].label_low[starti+n]
-                    vas.present(win, expInfo['escape key'], clock, visual, event,
-                                core, text_pos, txt, high, low)
-
-        # draw things here
-        win.flip()
-
-        trialNumber += 1
-        theseKeys = event.getKeys(keyList=expInfo['escape key'])
 
 
 win.close(), core.quit()
