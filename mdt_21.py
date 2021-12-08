@@ -82,7 +82,7 @@ else:
 # Setup eyetracking
 # ioDevice = ioConfig = ioSession = ioServer = eyetracker = None
 
-if expInfo['eyetracker']:
+if expInfo['eyetracker'] == '1':
 
     # import needed modules
     import tobii_research as tr
@@ -112,6 +112,7 @@ if expInfo['eyetracker']:
     # start getting gaze data
     my_eyetracker.subscribe_to(
         tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
+
 
 # make a color list
 col_list = [[230, 25, 75],  # red
@@ -325,7 +326,7 @@ def prep_lines(n, col_list, dif, lines):
 
 
 def save_eyeData():
-    if expInfo['eyetracker']:
+    if expInfo['eyetracker'] == '1':
         # stop getting gaze data
         my_eyetracker.unsubscribe_from(
             tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
@@ -501,7 +502,7 @@ def draw_routine(blockNum, lines):
 
 
 def feedback(xys_points, blockNum):
-    if expInfo['eyetracker']:
+    if expInfo['eyetracker'] == '1':
         thisExp.addData('fb_onset_in_sys_time_at_tracker',
                         tr.get_system_time_stamp())
     dif = xlsx_dic['blocks'].dif[blockNum]
