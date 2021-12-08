@@ -542,7 +542,7 @@ def feedback(xys_points, blockNum):
             rects.draw()
             circles.draw()
             win.flip()
-            if timeStamp2BSend:
+            if expInfo['eyetracker'] == '1'and timeStamp2BSend:
                 thisExp.addData('fb_onset_in_sys_time_at_tracker',
                                 tr.get_system_time_stamp())
                 thisExp.addData('fb_onset_in_py_time',
