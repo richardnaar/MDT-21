@@ -1,5 +1,5 @@
 
-def present(win, esckey, clock, visual, event, core, text_pos, question_text, low, high):
+def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question_text, low, high):
     # mouse = event.Mouse(win=win)
     scale_width = 0.5
     scale_y_pos = -0.1
@@ -91,8 +91,8 @@ def present(win, esckey, clock, visual, event, core, text_pos, question_text, lo
         win.flip()
 
         # save the rating and RT
-        # thisExp.addData('vas_response_slf', VAS_resp)
-        # thisExp.addData('vas_RT_slf', VAS_RT)
+        thisExp.addData('vas_response', VAS_resp)
+        thisExp.addData('vas_rt', VAS_RT)
         mouse.setVisible(False)
         core.wait(0.25)
 

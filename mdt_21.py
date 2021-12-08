@@ -50,9 +50,18 @@ thisExp = data.ExperimentHandler(name=expName, version='',
                                  savePickle=True, saveWideText=True,
                                  dataFileName=filename)
 
+date = data.getDateStr()
+dataDir = _thisDir + '\\data\\'
+filename2 = expInfo['participant'] + '-positions' + date + '.txt'
+
+with open(dataDir+filename2, 'a') as file_object:
+    file_object.write('participant' + ';' + 'failed_trial' + ';' + 'difficulty' + ';' + 'outlier' + ';'
+                      'trial' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + ';' + '\n')
+
+
 # Setup the Window
 win = visual.Window(
-    size=[1920, 1200], fullscr=True, screen=0,
+    size=[1920, 1200], fullscr=False, screen=0,
     winType='pyglet', allowGUI=False, allowStencil=False,
     monitor='testMonitor', color=[0, 0, 0], colorSpace='rgb',
     blendMode='avg', useFBO=True,
@@ -230,6 +239,17 @@ def check_quit():
         core.quit()
 
 
+# with open(_thisDir+filename, 'a') as file_object:
+#     file_object.write(
+#         expInfo['participant'] + ',' + 'data1' + ',' + 'data2' + ',' + 'data3' + '\n')
+
+    # if not picPresented:
+    #     thisExp.addData('picStartTime', clock.getTime())
+    #     fixPresented = True
+
+# thisExp.nextEntry()
+
+
 def prep_lines(n, col_list, dif, lines):
     # lines = []
     color = col_list[dif]
@@ -267,6 +287,9 @@ def prep_lines(n, col_list, dif, lines):
         # redifine the lines
         lines[i].start, lines[i].end = start[i], end[i]
         lines[i].lineColor, lines[i].status = color, NOT_STARTED
+    # with open(dataDir+filename2, 'a') as file_object:
+    #     file_object.write(expInfo['participant'] + ',' +
+    #                         'Trial' + ',' + str(start) + ',' + str(end) + '\n')
     return lines, angle, start, end
 
 
@@ -300,6 +323,9 @@ def draw_routine(blockNum, lines):
             n = [3, 6][dif]
             if not trialRepeat:  # prepare lines
                 lines, angle, start, end = prep_lines(n, col_list, dif, lines)
+                # with open(dataDir+filename2, 'a') as file_object:
+                #     file_object.write(expInfo['participant'] + ',' +
+                #                         str(blockNum) + ',' + str(start) + ',' + str(end) + '\n')
             else:
                 for i in range(n):
                     lines[i].setAutoDraw(True)
@@ -394,6 +420,23 @@ def draw_routine(blockNum, lines):
         else:
             trialNumber += 1
             trialRepeat, trialRepeatCount = False, 0
+
+        if trialNumber < nTrials:
+            with open(dataDir+filename2, 'a') as file_object:
+                file_object.write(expInfo['participant'] + ';' + str(trialRepeat) + ';' + str(dif) + ';' + str(outlier) + ';' +
+                                  str(blockNum-2) + ';' + str(start) + ';' + str(end) + ';' + str(mouse.x) + ';' + str(mouse.y) + ';' + '\n')
+            if trialRepeat and trialNumber == 0:
+                thisExp.addData('trial_n', 1)
+            else:
+                thisExp.addData('trial_n', trialNumber)
+            thisExp.addData('trial_repaet', trialRepeat)
+            thisExp.addData('block_n', blockNum-2)
+            thisExp.addData('difficulty', dif)
+            thisExp.addData('outlier', outlier)
+            thisExp.addData('brush_RT', round(t - draw_start, 3))
+            if trialNumber < nTrials-1:
+                thisExp.nextEntry()
+
     y_circles = find_points(dif, outlier)
     if nTrials:
         for yi in range(len(points)):
@@ -402,6 +445,7 @@ def draw_routine(blockNum, lines):
             else:
                 # actual feedback
                 xys_circles[yi][1] = round(-7*(points[yi]-0.025), 2)
+        thisExp.addData('xys_points', xys_circles)
     return xys_circles
 
 
@@ -466,9 +510,11 @@ while runExperiment and (len(theseKeys) < 1):
             for n, txt in enumerate(xlsx_dic['self_report'].item[starti:endi]):
                 low = xlsx_dic['self_report'].label_high[starti+n]
                 high = xlsx_dic['self_report'].label_low[starti+n]
-                vas.present(win, expInfo['escape key'], clock, visual, event,
+                vas.present(win, thisExp, expInfo['escape key'], clock, visual, event,
                             core, text_pos, txt, high, low)
-
+                construct = xlsx_dic['self_report'].construct[starti+n]
+                thisExp.addData('construct', construct)
+                thisExp.nextEntry()
     # draw things here
     win.flip()
 
