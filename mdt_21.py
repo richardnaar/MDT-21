@@ -1,9 +1,12 @@
 # andmetabel
 # outlier
 # silmaliigutused
+# trackeri ja psychopy absoluutne aeg
 
 from __future__ import absolute_import, division
 import math
+
+from psychopy.platform_specific.win32 import FALSE
 import vas
 # from typing import Dict
 # from numpy.lib.function_base import angle
@@ -68,6 +71,9 @@ win = visual.Window(
     units='height')
 aspect = win.size[0]/win.size[1]
 
+# define clock
+drawClock = core.Clock()
+globalClock = core.Clock()
 
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 
@@ -260,10 +266,6 @@ for n, name in enumerate(excel_sheets):
     xlsx_dic["{0}".format(name)] = xls_file.parse()
 
 
-# define clock
-drawClock = core.Clock()
-
-
 def check_quit():
     quitKeys = event.getKeys(keyList=expInfo['escape key'])
     if len(quitKeys) > 0:
@@ -360,6 +362,7 @@ def draw_routine(blockNum, lines):
 
     trialRepeatCount = 0
     while nTrials:
+        timeStamp2BSend = True
         mouse = event.Mouse(win=win)
         mouse.x, mouse.y = [], []
         # if it is the end of the routine loop
@@ -459,6 +462,13 @@ def draw_routine(blockNum, lines):
                 if frameN > 2:
                     click_next.draw()
                 win.flip()
+                if expInfo['eyetracker'] == '1' and timeStamp2BSend:
+                    thisExp.addData('brush_onset_in_sys_time_at_tracker',
+                                    tr.get_system_time_stamp())
+                    thisExp.addData('brush_onset_in_py_time',
+                                    globalClock.getTime())
+                    timeStamp2BSend = False
+
                 check_quit()
 
         # expInfo['error tolerance']
@@ -486,6 +496,10 @@ def draw_routine(blockNum, lines):
             thisExp.addData('difficulty', dif)
             thisExp.addData('outlier', outlier)
             thisExp.addData('brush_RT', round(t - draw_start, 3))
+            if len(dist):
+                thisExp.addData('brush_max_dev', np.max(dist))
+                thisExp.addData('brush_mean_dev', np.mean(dist))
+
             if trialNumber < nTrials-1:
                 thisExp.nextEntry()
 
@@ -502,9 +516,8 @@ def draw_routine(blockNum, lines):
 
 
 def feedback(xys_points, blockNum):
-    if expInfo['eyetracker'] == '1':
-        thisExp.addData('fb_onset_in_sys_time_at_tracker',
-                        tr.get_system_time_stamp())
+    # isFB=xlsx_dic['blocks'].nSelf[blockNum]
+    timeStamp2BSend = True
     dif = xlsx_dic['blocks'].dif[blockNum]
     circles.colors = col_list[dif]
     if blockNum == 3:
@@ -513,7 +526,6 @@ def feedback(xys_points, blockNum):
         circles.opacities, rects.contrs = 1, 1
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
-#
     # construct, item, label_low, label_high
     default_text0.pos, default_text1.pos = text_pos['bar_high'], text_pos['bar_low']
     default_text0.text, default_text1.text = '100%', '0%'
@@ -530,6 +542,12 @@ def feedback(xys_points, blockNum):
             rects.draw()
             circles.draw()
             win.flip()
+            if timeStamp2BSend:
+                thisExp.addData('fb_onset_in_sys_time_at_tracker',
+                                tr.get_system_time_stamp())
+                thisExp.addData('fb_onset_in_py_time',
+                                globalClock.getTime())
+                timeStamp2BSend = False
             if framesCount > 60*3:
                 click_next.draw()
             check_quit()
