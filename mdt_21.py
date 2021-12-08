@@ -29,7 +29,7 @@ os.chdir(_thisDir)  # set as a current dir
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
 expInfo = {'participant': '', 'error tolerance': 0.06,
-           'fb mode': ['type A', 'type B'], 'escape key': 'q'}
+           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'escape key': 'q'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -80,7 +80,38 @@ else:
 
 
 # Setup eyetracking
-ioDevice = ioConfig = ioSession = ioServer = eyetracker = None
+# ioDevice = ioConfig = ioSession = ioServer = eyetracker = None
+
+if expInfo['eyetracker']:
+
+    # import needed modules
+    import tobii_research as tr
+    import time
+    import csv
+
+    # find eye trackers
+    found_eyetrackers = tr.find_all_eyetrackers()
+    # select first eye tracker
+    my_eyetracker = found_eyetrackers[0]
+
+    gaze_list = []
+
+    # create call back to get gaze data
+    def gaze_data_callback(gaze_data):
+        gaze_list.append([gaze_data['system_time_stamp'],
+                          gaze_data['device_time_stamp'],
+                          gaze_data['left_gaze_point_on_display_area'],
+                          gaze_data['left_gaze_point_validity'],
+                          gaze_data['left_pupil_diameter'],
+                          gaze_data['left_pupil_validity'],
+                          gaze_data['right_gaze_point_on_display_area'],
+                          gaze_data['right_gaze_point_validity'],
+                          gaze_data['right_pupil_diameter'],
+                          gaze_data['right_pupil_validity']])
+
+    # start getting gaze data
+    my_eyetracker.subscribe_to(
+        tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
 
 # make a color list
 col_list = [[230, 25, 75],  # red
@@ -293,6 +324,26 @@ def prep_lines(n, col_list, dif, lines):
     return lines, angle, start, end
 
 
+def save_eyeData():
+    if expInfo['eyetracker']:
+        # stop getting gaze data
+        my_eyetracker.unsubscribe_from(
+            tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
+
+        # load csv module and write gaze data to disk
+        with open(filename+'_et.csv', 'w', newline='') as f:
+            w = csv.writer(f, delimiter=",")
+            # add header for data selected in callback
+            w.writerow(['system_time', 'tracker_time',
+                        'left_gaze_pos', 'left_gaze_validity', 'left_pupil_diameter', 'left_pupil_validity',
+                        'right_gaze_pos', 'right_gaze_validity', 'right_pupil_diameter', 'right_pupil_validity'])
+
+            # iterate all items
+            for row in gaze_list:
+                # write row in csv
+                w.writerow(row)
+
+
 def draw_routine(blockNum, lines):
     frameTolerance = 0.001  # how close to onset before 'same' frame
     trialNumber, trialRepeat = 0, False
@@ -450,6 +501,9 @@ def draw_routine(blockNum, lines):
 
 
 def feedback(xys_points, blockNum):
+    if expInfo['eyetracker']:
+        thisExp.addData('fb_onset_in_sys_time_at_tracker',
+                        tr.get_system_time_stamp())
     dif = xlsx_dic['blocks'].dif[blockNum]
     circles.colors = col_list[dif]
     if blockNum == 3:
@@ -522,4 +576,5 @@ while runExperiment and (len(theseKeys) < 1):
     theseKeys = event.getKeys(keyList=expInfo['escape key'])
 
 
+save_eyeData()
 win.close(), core.quit()
