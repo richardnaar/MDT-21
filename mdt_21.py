@@ -1,5 +1,5 @@
 # outlieri arvutamine
-# miks jookseb kokku?
+# kas endiselt jookseb kokku?
 # algusesse sissejuhatav slaid
 
 from __future__ import absolute_import, division
