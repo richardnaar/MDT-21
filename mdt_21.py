@@ -1,7 +1,7 @@
-# andmetabel
-# outlier
-# silmaliigutused
-# trackeri ja psychopy absoluutne aeg
+# outlieri arvutamine
+# ühe joonena
+# miks jookseb kokku?
+# algusesse sissejuhatav slaid
 
 from __future__ import absolute_import, division
 import math
@@ -31,7 +31,7 @@ os.chdir(_thisDir)  # set as a current dir
 
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
-expInfo = {'participant': '', 'error tolerance': 0.06,
+expInfo = {'participant': '', 'error tolerance': 0.08,
            'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'escape key': 'q'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -121,14 +121,25 @@ if expInfo['eyetracker'] == '1':
 
 
 # make a color list
-col_list = [[230, 25, 75],  # red
-            [0, 120, 200]]  # blue
+# col_list = [[230, 25, 75],  # red
+#             [0, 120, 200]]  # blue
 
-random.shuffle(col_list)
-# normalize
-for i, k in enumerate(col_list):
-    for j, l in enumerate(k):
-        col_list[i][j] = round((l/255)*2 - 1, 2)
+# # random.shuffle(col_list)
+# # normalize
+# for i, k in enumerate(col_list):
+#     for j, l in enumerate(k):
+#         col_list[i][j] = round((l/255)*2 - 1, 2)
+
+
+col_list2 = ['red', 'blue']
+random.shuffle(col_list2)
+col_dict = {'red': [230, 25, 75], 'blue':  [0, 120, 200]}
+
+
+for i in col_list2:
+    for j, k in enumerate(col_dict[i]):
+        col_dict[i][j] = round((k/255)*2 - 1, 2)
+
 
 default_text0 = visual.TextStim(win=win, name='text0',
                                 text='juku', font='Arial', pos=(0, 0),
@@ -198,7 +209,7 @@ rects = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize
                                 sfs=0, contrs=1, phases=0, elementTex='sqr',
                                 elementMask='gauss', texRes=48, interpolate=True,
                                 autoLog=None, maskParams=None)
-max_lines = 6
+max_lines = 7
 lines = list()
 for i in range(max_lines):
     line = visual.Line(win, start=(0, 0), end=(0, 0),
@@ -215,14 +226,14 @@ def find_points(dif, outlier):
             y_circles[0:4] = np.random.uniform(low=-0.1, high=0, size=4)
             if outlier:
                 y_circles[3] = float(np.random.uniform(
-                    low=0, high=0.1, size=1))
+                    low=0.05, high=0.15, size=1))
             y_circles = (y_circles[0:4]-np.mean(y_circles))-0.05
         else:
-            y_circles[0:4] = np.random.uniform(low=0, high=0.1, size=4)
+            y_circles[0:4] = np.random.uniform(low=0.05, high=0.15, size=4)
             if outlier:
                 y_circles[3] = float(np.random.uniform(
                     low=-0.1, high=0, size=1))
-            y_circles = (y_circles[0:4]-np.mean(y_circles))+0.05
+            y_circles = (y_circles[0:4]-np.mean(y_circles))+0.1
     # y_circles = [-0.05]*4
     y_circles = [round(i, 2) for i in y_circles]
     y_circles = np.flip(np.sort(y_circles))
@@ -290,9 +301,10 @@ def save_timeStamps(event_name):
 # thisExp.nextEntry()
 
 
-def prep_lines(n, col_list, dif, lines):
+def prep_lines(n, dif, lines):
     # lines = []
-    color = col_list[dif]
+    # color = col_list[dif]
+    color = col_dict[col_list2[dif]]
     # set the number of links based on difficulty
     angle, length, start, end = [0]*n, [0]*n, [[]]*n, [[]]*n
     # make subsequent line segments (as many as needed)
@@ -300,7 +312,7 @@ def prep_lines(n, col_list, dif, lines):
         within, repeatSearch, repsN = 0, False, 0
         while within == 0 or repeatSearch or repsN > 10:
             angle[i] = np.random.uniform(low=0, high=2*math.pi)
-            length[i] = np.random.uniform(low=0.05, high=0.2)
+            length[i] = np.random.uniform(low=0.15, high=0.25)
 
             if i == 0:
                 # for the first line, pick a point at random 10% away from the edge
@@ -330,7 +342,7 @@ def prep_lines(n, col_list, dif, lines):
     # with open(dataDir+filename2, 'a') as file_object:
     #     file_object.write(expInfo['participant'] + ',' +
     #                         'Trial' + ',' + str(start) + ',' + str(end) + '\n')
-    return lines, angle, start, end
+    return lines, angle, start, end, sum(length)
 
 
 def save_eyeData():
@@ -354,6 +366,7 @@ def save_eyeData():
 
 
 def draw_routine(blockNum, lines):
+    dist_travelled = 0
     frameTolerance = 0.001  # how close to onset before 'same' frame
     trialNumber, trialRepeat = 0, False
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
@@ -381,9 +394,10 @@ def draw_routine(blockNum, lines):
 
             dur, current_dist, wait, frameN = 0, 0, True, -1
             dist = list()
-            n = [3, 6][dif]
+            n = [4, 7][dif]
             if not trialRepeat:  # prepare lines
-                lines, angle, start, end = prep_lines(n, col_list, dif, lines)
+                lines, angle, start, end, length = prep_lines(
+                    n, dif, lines)
                 # with open(dataDir+filename2, 'a') as file_object:
                 #     file_object.write(expInfo['participant'] + ',' +
                 #                         str(blockNum) + ',' + str(start) + ',' + str(end) + '\n')
@@ -448,10 +462,16 @@ def draw_routine(blockNum, lines):
                         # Cartesian distance from point to line segment
                         j = cd.lineseg_dists(
                             ([[mouse.x[-1], mouse.y[-1]]]), np.asarray(start), np.asarray(end))
-
                         current_dist = round(min(j), 2)
                         # add the smallest one to the counter
                         dist.append(min(j))
+
+                        if len(mouse.x) > 1:
+                            dist_travelled = dist_travelled + np.sqrt(
+                                (mouse.x[-2]-mouse.x[-1]) ** 2 + (mouse.y[-2]-mouse.y[-1]) ** 2)
+                        else:
+                            dist_travelled = 0
+
                     elif sum(buttons) > 0 and hovering(click_next, mouse):
                         if len(dist):  # save actual performance
                             points[trialNumber] = round(np.max(dist), 2)
@@ -476,9 +496,8 @@ def draw_routine(blockNum, lines):
                     timeStamp2BSend = False
 
                 check_quit()
-
         # expInfo['error tolerance']
-        if not len(dist) or np.max(dist) > float(expInfo['error tolerance']) and trialRepeatCount < 2:
+        if not len(dist) or np.max(dist) > float(expInfo['error tolerance']) or dist_travelled < length*0.8 and trialRepeatCount < 2:
             brush.reset()
             trialNumber = trialNumber
             draw_text('Oops!', default_text0, click_next)
@@ -500,6 +519,7 @@ def draw_routine(blockNum, lines):
             thisExp.addData('trial_repaet', trialRepeat)
             thisExp.addData('block_n', blockNum-2)
             thisExp.addData('difficulty', dif)
+            thisExp.addData('line_col', col_list2[dif])  # list(lines[1].color)
             thisExp.addData('outlier', outlier)
             thisExp.addData('brush_RT', round(t - draw_start, 3))
             if len(dist):
@@ -525,7 +545,7 @@ def feedback(xys_points, blockNum):
     # isFB=xlsx_dic['blocks'].nSelf[blockNum]
     timeStamp2BSend = True
     dif = xlsx_dic['blocks'].dif[blockNum]
-    circles.colors = col_list[dif]
+    circles.colors = col_dict[col_list2[dif]]
     if blockNum == 3:
         circles.opacities, rects.contrs = [1, 0, 0, 0], [1, 0.2, 0.2, 0.2]
     elif blockNum == 4:
