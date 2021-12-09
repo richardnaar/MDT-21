@@ -289,7 +289,7 @@ def prep_lines(n, dif, lines):
     # make subsequent line segments (as many as needed)
     for i in range(n):
         within, repeatSearch, repsN = 0, False, 0
-        while within == 0 or repeatSearch or repsN > 10:
+        while within == 0 or repeatSearch and not repsN > 10:
             angle[i] = np.random.uniform(low=0, high=2*math.pi)
             length[i] = np.random.uniform(low=0.15, high=0.25)
 
@@ -308,13 +308,14 @@ def prep_lines(n, dif, lines):
             # check that the lines stay within the screen
             if abs(end[i][0]) < 0.4 and abs(end[i][1]) < 0.4 and abs(start[i][0]) < 0.4 and abs(start[i][1]) < 0.4:
                 within = 1
+            repsN += 1
 
-            if i > 1 and cd.doIntersect(cd.Point(start[i][0], start[i][1]), cd.Point(end[i][0], end[i][1]), cd.Point(start[i-2][0], start[i-2][1]), cd.Point(end[i-2][0], end[i-2][1])):
-                repeatSearch = True
-                repsN += 1
-            else:
-                repeatSearch = False
-                repsN = 0
+            # if i > 1 and cd.doIntersect(cd.Point(start[i][0], start[i][1]), cd.Point(end[i][0], end[i][1]), cd.Point(start[i-2][0], start[i-2][1]), cd.Point(end[i-2][0], end[i-2][1])):
+            #     repeatSearch = True
+            #     # repsN += 1
+            # else:
+            #     repeatSearch = False
+            #     repsN = 0
         # redifine the lines
         lines[i].start, lines[i].end = start[i], end[i]
         lines[i].lineColor, lines[i].status = color, NOT_STARTED
@@ -362,15 +363,15 @@ def draw_routine(blockNum, lines):
     while nTrials:
         timeStamp2BSend = True
         mouse = event.Mouse(win=win)
-        mouse.x, mouse.y = [], []
+        mouse.x, mouse.y = list([0]), list([0])  # [], []
         # if it is the end of the routine loop
         if trialNumber > nTrials:
             brush.reset()
             brush.status = NOT_STARTED
+            win.flip()
             break
         # if it is not the end of the routine yet
         elif trialNumber < nTrials:
-
             dur, current_dist, wait, frameN = 0, 0, True, -1
             button_pressed = False
             dist = list()
@@ -456,6 +457,9 @@ def draw_routine(blockNum, lines):
                 if not buttons[0] and button_pressed:  #
                     if len(dist):  # save actual performance
                         points[trialNumber] = round(np.max(dist), 2)
+                    brush.reset()
+                    win.flip()
+                    save_timeStamps('brush_offset_')
                     break
 
                 if not wait:
@@ -509,7 +513,6 @@ def draw_routine(blockNum, lines):
 
             if trialNumber < nTrials-1:
                 thisExp.nextEntry()
-
     y_circles = find_points(dif, outlier)
     if nTrials:
         for yi in range(len(points)):
@@ -581,7 +584,6 @@ while runExperiment and (len(theseKeys) < 1):
         intro_text = xlsx_dic['blocks'].intro_text_content[trialNumber]
         draw_text(intro_text, txt_dic['def0'], click_next)
         xys_points = draw_routine(trialNumber, lines)
-        save_timeStamps('brush_offset_')
         feedback(xys_points, trialNumber)
         save_timeStamps('fb_offset_')
         brush.reset()
