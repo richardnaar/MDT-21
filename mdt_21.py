@@ -273,7 +273,13 @@ def check_quit():
         core.quit()
 
 
-# with open(_thisDir+filename, 'a') as file_object:
+def save_timeStamps(event_name):
+    if expInfo['eyetracker'] == '1':
+        thisExp.addData(event_name+'_in_sys_time_at_tracker',
+                        tr.get_system_time_stamp())
+        thisExp.addData(event_name+'_in_py_time',
+                        globalClock.getTime())
+    # with open(_thisDir+filename, 'a') as file_object:
 #     file_object.write(
 #         expInfo['participant'] + ',' + 'data1' + ',' + 'data2' + ',' + 'data3' + '\n')
 
@@ -574,7 +580,9 @@ while runExperiment and (len(theseKeys) < 1):
         intro_text = xlsx_dic['blocks'].intro_text_content[trialNumber]
         draw_text(intro_text, txt_dic['def0'], click_next)
         xys_points = draw_routine(trialNumber, lines)
+        save_timeStamps('brush_offset_')
         feedback(xys_points, trialNumber)
+        save_timeStamps('fb_offset_')
         brush.reset()
         brush.status = NOT_STARTED
         if nSelfs:
