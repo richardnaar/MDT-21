@@ -448,7 +448,7 @@ def draw_routine(blockNum, lines):
                         # add the smallest one to the counter
                         dist.append(min(j))
 
-                        if len(mouse.x) > 1:
+                        if len(mouse.x) > 2:
                             dist_travelled = dist_travelled + np.sqrt(
                                 (mouse.x[-2]-mouse.x[-1]) ** 2 + (mouse.y[-2]-mouse.y[-1]) ** 2)
                         else:
@@ -482,6 +482,7 @@ def draw_routine(blockNum, lines):
 
                 check_quit()
         # expInfo['error tolerance']
+
         if not len(dist) or np.max(dist) > float(expInfo['error tolerance']) or dist_travelled < length*0.8 and trialRepeatCount < 2:
             brush.reset()
             trialNumber = trialNumber
