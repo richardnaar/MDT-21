@@ -1,5 +1,4 @@
 # outlieri arvutamine
-# ühe joonena
 # miks jookseb kokku?
 # algusesse sissejuhatav slaid
 
@@ -120,23 +119,12 @@ if expInfo['eyetracker'] == '1':
         tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
 
 
-# make a color list
-# col_list = [[230, 25, 75],  # red
-#             [0, 120, 200]]  # blue
-
-# # random.shuffle(col_list)
-# # normalize
-# for i, k in enumerate(col_list):
-#     for j, l in enumerate(k):
-#         col_list[i][j] = round((l/255)*2 - 1, 2)
-
-
-col_list2 = ['red', 'blue']
-random.shuffle(col_list2)
+col_list = ['red', 'blue']
+random.shuffle(col_list)
 col_dict = {'red': [230, 25, 75], 'blue':  [0, 120, 200]}
 
 
-for i in col_list2:
+for i in col_list:
     for j, k in enumerate(col_dict[i]):
         col_dict[i][j] = round((k/255)*2 - 1, 2)
 
@@ -290,21 +278,12 @@ def save_timeStamps(event_name):
                         tr.get_system_time_stamp())
         thisExp.addData(event_name+'_in_py_time',
                         globalClock.getTime())
-    # with open(_thisDir+filename, 'a') as file_object:
-#     file_object.write(
-#         expInfo['participant'] + ',' + 'data1' + ',' + 'data2' + ',' + 'data3' + '\n')
-
-    # if not picPresented:
-    #     thisExp.addData('picStartTime', clock.getTime())
-    #     fixPresented = True
-
-# thisExp.nextEntry()
 
 
 def prep_lines(n, dif, lines):
     # lines = []
     # color = col_list[dif]
-    color = col_dict[col_list2[dif]]
+    color = col_dict[col_list[dif]]
     # set the number of links based on difficulty
     angle, length, start, end = [0]*n, [0]*n, [[]]*n, [[]]*n
     # make subsequent line segments (as many as needed)
@@ -393,6 +372,7 @@ def draw_routine(blockNum, lines):
         elif trialNumber < nTrials:
 
             dur, current_dist, wait, frameN = 0, 0, True, -1
+            button_pressed = False
             dist = list()
             n = [4, 7][dif]
             if not trialRepeat:  # prepare lines
@@ -412,6 +392,7 @@ def draw_routine(blockNum, lines):
             _timeToFirstFrame = win.getFutureFlipTime(clock="now")
             drawClock.reset(-_timeToFirstFrame)
             t = drawClock.getTime()
+            # not button_pressed or buttons[0] > 0:  # t - duration < 0:
             while t - duration < 0:
                 # wait for mouse release
                 buttons = mouse.getPressed()
@@ -448,17 +429,17 @@ def draw_routine(blockNum, lines):
                     win.timeOnFlip(brush, 'tStartRefresh')
                     brush.setAutoDraw(True)
 
-                if sum(buttons) > 0 or (t > waitClickFor and wait) and frameN > 1:
+                #
+                if buttons[0] > 0 or (t > waitClickFor and wait) and frameN > 1:
 
                     if wait:
                         draw_start = t
                         wait = False
-#                        mouse.x, mouse.y = [start[0][0]], [start[0][1]]
-                    for line in lines:
-                        line.setAutoDraw(False)
+                        for line in lines:
+                            line.setAutoDraw(False)
                     # hide lines
-                    if sum(buttons) > 0 and not hovering(click_next, mouse):
-
+                    if buttons[0] > 0:  # and not hovering(click_next, mouse)
+                        button_pressed = True
                         # Cartesian distance from point to line segment
                         j = cd.lineseg_dists(
                             ([[mouse.x[-1], mouse.y[-1]]]), np.asarray(start), np.asarray(end))
@@ -471,11 +452,11 @@ def draw_routine(blockNum, lines):
                                 (mouse.x[-2]-mouse.x[-1]) ** 2 + (mouse.y[-2]-mouse.y[-1]) ** 2)
                         else:
                             dist_travelled = 0
-
-                    elif sum(buttons) > 0 and hovering(click_next, mouse):
-                        if len(dist):  # save actual performance
-                            points[trialNumber] = round(np.max(dist), 2)
-                        break
+                    # and hovering(click_next, mouse):
+                if not buttons[0] and button_pressed:  #
+                    if len(dist):  # save actual performance
+                        points[trialNumber] = round(np.max(dist), 2)
+                    break
 
                 if not wait:
                     dur = round(t - draw_start, 1)
@@ -485,8 +466,8 @@ def draw_routine(blockNum, lines):
                 txt_dic['def0'].draw()
                 txt_dic['def1'].draw()
 
-                if frameN > 2:
-                    click_next.draw()
+                # if frameN > 2:
+                #     click_next.draw()
                 win.flip()
                 if expInfo['eyetracker'] == '1' and timeStamp2BSend:
                     thisExp.addData('brush_onset_in_sys_time_at_tracker',
@@ -519,7 +500,7 @@ def draw_routine(blockNum, lines):
             thisExp.addData('trial_repaet', trialRepeat)
             thisExp.addData('block_n', blockNum-2)
             thisExp.addData('difficulty', dif)
-            thisExp.addData('line_col', col_list2[dif])  # list(lines[1].color)
+            thisExp.addData('line_col', col_list[dif])  # list(lines[1].color)
             thisExp.addData('outlier', outlier)
             thisExp.addData('brush_RT', round(t - draw_start, 3))
             if len(dist):
@@ -545,7 +526,7 @@ def feedback(xys_points, blockNum):
     # isFB=xlsx_dic['blocks'].nSelf[blockNum]
     timeStamp2BSend = True
     dif = xlsx_dic['blocks'].dif[blockNum]
-    circles.colors = col_dict[col_list2[dif]]
+    circles.colors = col_dict[col_list[dif]]
     if blockNum == 3:
         circles.opacities, rects.contrs = [1, 0, 0, 0], [1, 0.2, 0.2, 0.2]
     elif blockNum == 4:
