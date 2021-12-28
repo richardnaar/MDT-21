@@ -144,7 +144,7 @@ default_text1 = visual.TextStim(win=win, name='text1',
 txt_dic = {'def0': default_text0, 'def1': default_text1}
 
 # 'bar_high': (0, 0.43), 'bar_low': (0, -0.43)
-text_pos = {'intro': (0.7, -0.35), 'distance': (-0.4, 0.4), 'timer': (-0.2, 0.4),
+text_pos = {'intro': (0.7, -0.35), 'distance': (-0.45, 0.42), 'timer': (-0.45, 0.38),
             'middle': (0, 0), 'bar': (0.06, 0.6), 'bar_high': (-0.40, 0.3), 'bar_low': (-0.40, -0.3),
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
@@ -444,7 +444,7 @@ def draw_routine(blockNum, lines):
                         # Cartesian distance from point to line segment
                         j = cd.lineseg_dists(
                             ([[mouse.x[-1], mouse.y[-1]]]), np.asarray(start), np.asarray(end))
-                        current_dist = round(min(j), 2)
+                        current_dist = min(j)
                         # add the smallest one to the counter
                         dist.append(min(j))
 
@@ -463,10 +463,11 @@ def draw_routine(blockNum, lines):
                     break
 
                 if not wait:
-                    dur = round(t - draw_start, 1)
+                    dur = t - draw_start
 
                 # draw things hereq
-                txt_dic['def0'].text,  txt_dic['def1'].text = current_dist, dur
+                txt_dic['def0'].text = 'täpsus: ' + "%.2f" % current_dist
+                txt_dic['def1'].text = 'kestus: ' + "%.2f" % dur
                 txt_dic['def0'].draw()
                 txt_dic['def1'].draw()
 
@@ -485,7 +486,7 @@ def draw_routine(blockNum, lines):
         if not len(dist) or np.max(dist) > float(expInfo['error tolerance']) or dist_travelled < length*0.8 and trialRepeatCount < 2:
             brush.reset()
             trialNumber = trialNumber
-            draw_text('Oops!', default_text0, click_next)
+            draw_text('Saad uue katse!', default_text0, click_next)
             txt_dic['def0'].pos = text_pos['distance']
             trialRepeat = True
             trialRepeatCount += 1
