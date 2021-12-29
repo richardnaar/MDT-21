@@ -37,7 +37,7 @@ def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question
         win=win, name='slf_set',
         width=(0.01), height=(0.05), ori=0, pos=(0, scale_y_pos),
         lineWidth=text_h, lineColor=[0, 0, 0], lineColorSpace='rgb',
-        fillColor=[-1, -1, -1], fillColorSpace='rgb',
+        fillColor=[0, 0, 0], fillColorSpace='rgb',
         opacity=1, depth=-5.0, interpolate=True)
 
     def draw_VAS(win, question_text, low, high, qElem, lowElem, highElem, slf_scale, slf_set):
