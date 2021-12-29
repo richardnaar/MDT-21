@@ -30,7 +30,7 @@ os.chdir(_thisDir)  # set as a current dir
 
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
-expInfo = {'participant': '', 'error tolerance': 0.08,
+expInfo = {'participant': '', 'error tolerance': 8,
            'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'escape key': 'q'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -444,7 +444,7 @@ def draw_routine(blockNum, lines):
                         # Cartesian distance from point to line segment
                         j = cd.lineseg_dists(
                             ([[mouse.x[-1], mouse.y[-1]]]), np.asarray(start), np.asarray(end))
-                        current_dist = min(j)
+                        current_dist = min(j)*100
                         # add the smallest one to the counter
                         dist.append(min(j))
 
