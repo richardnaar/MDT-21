@@ -63,7 +63,7 @@ with open(dataDir+filename2, 'a') as file_object:
 
 # Setup the Window
 win = visual.Window(
-    size=[1920, 1200], fullscr=False, screen=0,
+    size=[1920, 1080], fullscr=False, screen=0,
     winType='pyglet', allowGUI=False, allowStencil=False,
     monitor='testMonitor', color=[0, 0, 0], colorSpace='rgb',
     blendMode='avg', useFBO=True,
