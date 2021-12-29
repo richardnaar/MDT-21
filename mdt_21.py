@@ -144,7 +144,7 @@ default_text1 = visual.TextStim(win=win, name='text1',
 txt_dic = {'def0': default_text0, 'def1': default_text1}
 
 # 'bar_high': (0, 0.43), 'bar_low': (0, -0.43)
-text_pos = {'intro': (0.7, -0.35), 'distance': (-0.45, 0.42), 'timer': (-0.45, 0.38),
+text_pos = {'intro': (0.7, -0.35), 'distance': (-0.5, 0.42), 'timer': (-0.5, 0.38),
             'middle': (0, 0), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_low': (-0.55, -0.3),
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
