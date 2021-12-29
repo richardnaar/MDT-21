@@ -21,7 +21,7 @@ from psychopy.constants import (NOT_STARTED)
 from psychopy import gui, visual, core, data, event, clock  # , logging, sound, colors
 import psychopy
 import cart_dist as cd
-import validate as val
+# import validation as val
 psychopy.useVersion('latest')
 
 
@@ -88,7 +88,8 @@ else:
 # ioDevice = ioConfig = ioSession = ioServer = eyetracker = None
 
 if expInfo['eyetracker'] == '1':
-    val.calibrate()
+    import validation as val
+    val.calibrate(win)
     # import needed modules
     import tobii_research as tr
     import time
@@ -274,7 +275,7 @@ def draw_text(text2draw, textElement, click_next):
 
 
 end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
-odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja'
+odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Jätkamiseks vajuta paremat hiireklahvi...)'
 
 excel_sheets = {'blocks': 'blocks1', 'self_report': 'self_report'}
 
