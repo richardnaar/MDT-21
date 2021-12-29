@@ -175,6 +175,7 @@ pic_dir = _thisDir + '\\images'  # folder with the experimental pictures
 gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
                          'gauss6.png', units='height', size=(1, 0.67), name='gauss', contrast=0.75)  # , contrast=0.75 size 1.1, 0.67
 
+
 gauss.pos, n_bars, ecc, ys = (0, 0), 4, [0.1, 0.3], [0]*4  # -0.1
 ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
 ys[3] = float(np.random.uniform(low=-0.25, high=0, size=1))
@@ -205,6 +206,13 @@ rects = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize
                                 sfs=0, contrs=1, phases=0, elementTex='sqr',
                                 elementMask='gauss', texRes=48, interpolate=True,
                                 autoLog=None, maskParams=None)
+
+arrow1 = visual.ImageStim(win=win, image=pic_dir + '\\' +
+                          'arrow1.png', units='height', size=(0.358, 0.15), pos=(-0.15, 0.35), name='arrow1', contrast=0.75)
+
+arrow2 = visual.ImageStim(win=win, image=pic_dir + '\\' +
+                          'arrow2.png', units='height', size=(0.392, 0.165), pos=(0.14, -0.35), name='arrow1', contrast=0.75)
+
 max_lines = 7
 lines = list()
 for i in range(max_lines):
@@ -230,7 +238,7 @@ def find_points(dif, outlier):
                 y_circles[3] = float(np.random.uniform(
                     low=-0.1, high=0, size=1))
             y_circles = (y_circles[0:4]-np.mean(y_circles))+0.1
-    # y_circles = [-0.05]*4
+    # y_circles = [0.1]*4
     y_circles = [round(i, 2) for i in y_circles]
     y_circles = np.flip(np.sort(y_circles))
     return y_circles
@@ -549,6 +557,7 @@ def feedback(xys_points, blockNum):
         circles.opacities, rects.contrs = 1, 1
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
+    txt = xlsx_dic['blocks'].intro_text_content[blockNum]
     # construct, item, label_low, label_high
     default_text0.pos, default_text1.pos = text_pos['bar_high'], text_pos['bar_low']
     default_text0.text, default_text1.text = '100%', '0%'
@@ -558,6 +567,9 @@ def feedback(xys_points, blockNum):
     framesCount = 0
     while nSelfs * nTrials > 0:
         buttons = mouse.getPressed()
+        if 'harjutuspl' in txt:
+            arrow1.draw()
+            arrow2.draw()
         if not sum(buttons):
             default_text0.draw()
             default_text1.draw()
@@ -641,4 +653,5 @@ while runExperiment and (len(theseKeys) < 1):
 
 
 save_eyeData()
-win.close(), io.quit(), core.quit()
+win.close(), core.quit()
+# io.quit()
