@@ -36,7 +36,7 @@ def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question
     slf_set = visual.Rect(
         win=win, name='slf_set',
         width=(0.01), height=(0.05), ori=0, pos=(0, scale_y_pos),
-        lineWidth=text_h, lineColor=[-1, -1, -1], lineColorSpace='rgb',
+        lineWidth=text_h, lineColor=[0, 0, 0], lineColorSpace='rgb',
         fillColor=[-1, -1, -1], fillColorSpace='rgb',
         opacity=1, depth=-5.0, interpolate=True)
 
