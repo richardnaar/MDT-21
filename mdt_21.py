@@ -145,7 +145,7 @@ txt_dic = {'def0': default_text0, 'def1': default_text1}
 
 # 'bar_high': (0, 0.43), 'bar_low': (0, -0.43)
 text_pos = {'intro': (0.7, -0.35), 'distance': (-0.45, 0.42), 'timer': (-0.45, 0.38),
-            'middle': (0, 0), 'bar': (0.06, 0.6), 'bar_high': (-0.40, 0.3), 'bar_low': (-0.40, -0.3),
+            'middle': (0, 0), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_low': (-0.55, -0.3),
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
 brush = visual.Brush(win=win, name='brush',
@@ -173,23 +173,23 @@ textbox = visual.TextBox2(
 
 pic_dir = _thisDir + '\\images'  # folder with the experimental pictures
 gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                         'gauss5.png', units='height', size=(1.1, 0.67), name='gauss', contrast=0.75)  # , contrast=0.75
+                         'gauss6.png', units='height', size=(1, 0.67), name='gauss', contrast=0.75)  # , contrast=0.75 size 1.1, 0.67
 
-gauss.pos, n_bars, ecc, ys = (-0.1, 0), 4, [0.1, 0.3], [0]*4
+gauss.pos, n_bars, ecc, ys = (0, 0), 4, [0.1, 0.3], [0]*4  # -0.1
 ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
 ys[3] = float(np.random.uniform(low=-0.25, high=0, size=1))
 ys = [round(i, 2) for i in ys]
 random.shuffle(ys)
-
+field_pos = (0, 0)
 if n_bars == 4:
     # List of box positions
     xys_circles = [[ecc[1]*-1, ys[0]], [ecc[0]*-1, ys[1]],
                    [ecc[0], ys[2]], [ecc[1], ys[3]]]
     xys_rects = [(ecc[1]*-1, 0), (ecc[0]*-1, 0), (ecc[0], 0), (ecc[1], 0)]
-    field_pos = (0.1, 0)
+
 elif n_bars == 1:
     xys_circles = [[0, ys[0]], [0, ys[1]], [0, ys[2]], [0, ys[3]]]
-    xys_rects, field_pos = (0, 0), (0, 0)
+    xys_rects = (0, 0)
 
 # Array of circles
 circles = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize=(1, 1),
