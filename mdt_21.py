@@ -21,6 +21,7 @@ from psychopy.constants import (NOT_STARTED)
 from psychopy import gui, visual, core, data, event, clock  # , logging, sound, colors
 import psychopy
 import cart_dist as cd
+import validate as val
 psychopy.useVersion('latest')
 
 
@@ -30,13 +31,12 @@ os.chdir(_thisDir)  # set as a current dir
 
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
-expInfo = {'participant': '', 'error tolerance': 0.08,
-           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'escape key': 'q'}
+expInfo = {'participant': '', 'error tolerance': 8,
+           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'escape key': 'escape'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
     core.quit()  # user pressed cancel
-
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 expInfo['psychopyVersion'] = psychopyVersion
@@ -88,7 +88,7 @@ else:
 # ioDevice = ioConfig = ioSession = ioServer = eyetracker = None
 
 if expInfo['eyetracker'] == '1':
-
+    val.calibrate()
     # import needed modules
     import tobii_research as tr
     import time
@@ -162,6 +162,14 @@ click_next = visual.ShapeStim(
     lineWidth=0,     colorSpace='rgb',  lineColor=[1, 1, 1], fillColor=[1, 1, 1],
     opacity=1, depth=-2.0, interpolate=True)
 
+
+textbox = visual.TextBox2(
+    win, text='Sisesta tekst siia...', font='Open Sans',
+    pos=(0, 0),     letterHeight=0.05, size=(None, None), borderWidth=2.0,
+    color='white', colorSpace='rgb', opacity=None, bold=False, italic=False,
+    lineSpacing=1.0, padding=0.0, anchor='center', fillColor=None, borderColor=None,
+    flipHoriz=False, flipVert=False, editable=True, name='textbox', autoLog=False,
+)
 
 pic_dir = _thisDir + '\\images'  # folder with the experimental pictures
 gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
@@ -256,6 +264,9 @@ def draw_text(text2draw, textElement, click_next):
         if len(theseKeys):
             core.quit()
 
+
+end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
+odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja'
 
 excel_sheets = {'blocks': 'blocks1', 'self_report': 'self_report'}
 
@@ -444,11 +455,11 @@ def draw_routine(blockNum, lines):
                         # Cartesian distance from point to line segment
                         j = cd.lineseg_dists(
                             ([[mouse.x[-1], mouse.y[-1]]]), np.asarray(start), np.asarray(end))
-                        current_dist = min(j)
+                        current_dist = min(j)*100
                         # add the smallest one to the counter
                         dist.append(min(j))
 
-                        if len(mouse.x) > 1:
+                        if len(mouse.x) > 2:
                             dist_travelled = dist_travelled + np.sqrt(
                                 (mouse.x[-2]-mouse.x[-1]) ** 2 + (mouse.y[-2]-mouse.y[-1]) ** 2)
                         else:
@@ -483,6 +494,7 @@ def draw_routine(blockNum, lines):
 
                 check_quit()
         # expInfo['error tolerance']
+
         if not len(dist) or np.max(dist) > float(expInfo['error tolerance']) or dist_travelled < length*0.8 and trialRepeatCount < 2:
             brush.reset()
             trialNumber = trialNumber
@@ -567,6 +579,19 @@ def feedback(xys_points, blockNum):
             break
 
 
+def insert_text(txt):
+    txt_dic['def0'].pos = text_pos['slf_txt']
+    txt_dic['def0'].text = txt
+    buttons = mouse.getPressed()
+    while not buttons[2]:
+        brush.reset()
+        buttons = mouse.getPressed()
+        txt_dic['def0'].draw()
+        textbox.draw()
+        win.flip()
+    thisExp.addData('odd', textbox.text)
+
+
 # this is the start of the experiment loop
 trialNumber = 0
 nTrials = len(xlsx_dic['blocks'])
@@ -574,9 +599,17 @@ runExperiment = True
 theseKeys = event.getKeys(keyList=expInfo['escape key'])
 while runExperiment and (len(theseKeys) < 1):
     mouse = event.Mouse(win=win)
+
+    buttons = mouse.getPressed()
+    # print(buttons)
     # if it is the end of the experiment loop
     if trialNumber == nTrials:
             # close and quit
+        insert_text(odd_text)
+        txt_dic['def0'].text = end_text
+        txt_dic['def0'].draw()
+        win.flip()
+        core.wait(2)
         runExperiment = False
 #        win.close(), core.quit()
     # if it is not the end of the experiment yet
@@ -608,4 +641,4 @@ while runExperiment and (len(theseKeys) < 1):
 
 
 save_eyeData()
-win.close(), core.quit()
+win.close(), io.quit(), core.quit()
