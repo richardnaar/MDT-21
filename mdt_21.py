@@ -32,7 +32,7 @@ os.chdir(_thisDir)  # set as a current dir
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
 expInfo = {'participant': '', 'error tolerance': 8,
-           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'escape key': 'escape'}
+           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'webcam': '1', 'escape key': 'escape'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -83,9 +83,34 @@ if expInfo['frameRate'] != None:
 else:
     frameDur = 1.0 / 60.0  # could not measure, so guess
 
+if expInfo['webcam'] == '1':
+    import cv2
+    vid_capture = cv2.VideoCapture(0)
+
+    vid_cod = cv2.VideoWriter_fourcc(*'XVID')
+    output = cv2.VideoWriter(
+        _thisDir+"\\videos\\START_"+expInfo['participant'] + ".mp4v", vid_cod, 20.0, (640, 480))
+
+
+def video_rec(output):
+    # Capture each frame of webcam video
+    ret, frame = vid_capture.read()
+#    cv2.imshow("My cam video", frame)
+    output.write(frame)
+
+
+def cam_close():
+    # close the already opened camera
+    vid_capture.release()
+    # close the already opened file
+    output.release()
+    # close the window and de-allocate any associated memory usage
+    cv2.destroyAllWindows()
+
 
 # Setup eyetracking
 # ioDevice = ioConfig = ioSession = ioServer = eyetracker = None
+
 
 if expInfo['eyetracker'] == '1':
     import validation as val
@@ -551,6 +576,7 @@ def feedback(xys_points, blockNum):
     # isFB=xlsx_dic['blocks'].nSelf[blockNum]
     timeStamp2BSend = True
     dif = xlsx_dic['blocks'].dif[blockNum]
+    out = xlsx_dic['blocks'].outlier[blockNum]
     circles.colors = col_dict[col_list[dif]]
     if blockNum == 3:
         circles.opacities, rects.contrs = [1, 0, 0, 0], [1, 0.2, 0.2, 0.2]
@@ -566,7 +592,12 @@ def feedback(xys_points, blockNum):
     circles.xys = xys_points
     mouse = event.Mouse(win=win)
     framesCount = 0
+    name = expInfo['participant'] + '_dif_' + \
+        str(dif) + '_out_' + '_tr_' + str(blockNum)
+    output = cv2.VideoWriter(
+        _thisDir+"\\videos\\"+name+".mp4v", vid_cod, 20.0, (640, 480))
     while nSelfs * nTrials > 0:
+        video_rec(output)
         buttons = mouse.getPressed()
         if 'harjutuspl' in txt:
             arrow1.draw()
@@ -606,11 +637,15 @@ def insert_text(txt):
 
 
 # this is the start of the experiment loop
+if expInfo['webcam'] == '1':
+    video_rec(output)
+
 trialNumber = 0
 nTrials = len(xlsx_dic['blocks'])
 runExperiment = True
 theseKeys = event.getKeys(keyList=expInfo['escape key'])
 while runExperiment and (len(theseKeys) < 1):
+    # video_rec()
     mouse = event.Mouse(win=win)
 
     buttons = mouse.getPressed()
@@ -654,5 +689,6 @@ while runExperiment and (len(theseKeys) < 1):
 
 
 save_eyeData()
+cam_close()
 win.close(), core.quit()
 # io.quit()
