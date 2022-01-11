@@ -32,7 +32,7 @@ os.chdir(_thisDir)  # set as a current dir
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
 expInfo = {'participant': '', 'error tolerance': 8,
-           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'webcam': '1', 'escape key': 'escape'}
+           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'webcam': '0', 'escape key': 'escape'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -167,7 +167,16 @@ default_text1 = visual.TextStim(win=win, name='text1',
                                 color='white', colorSpace='rgb', opacity=1,
                                 languageStyle='LTR', depth=-1.0)
 
-txt_dic = {'def0': default_text0, 'def1': default_text1}
+default_text2 = visual.TextBox2(
+    win, text='Sisesta tekst siia...', font='Open Sans',
+    pos=(0, 0),     letterHeight=0.05, size=(None, None), borderWidth=2.0,
+    color='white', colorSpace='rgb', opacity=None, bold=False, italic=False,
+    lineSpacing=1.0, padding=0.0, anchor='center', fillColor=None, borderColor=None,
+    flipHoriz=False, flipVert=False, editable=True, name='text2', autoLog=False,
+)
+
+
+txt_dic = {'def0': default_text0, 'def1': default_text1, 'def2': default_text2}
 
 # 'bar_high': (0, 0.43), 'bar_low': (0, -0.43)
 text_pos = {'intro': (0.7, -0.35), 'distance': (-0.5, 0.42), 'timer': (-0.5, 0.38),
@@ -188,14 +197,6 @@ click_next = visual.ShapeStim(
     lineWidth=0,     colorSpace='rgb',  lineColor=[1, 1, 1], fillColor=[1, 1, 1],
     opacity=1, depth=-2.0, interpolate=True)
 
-
-textbox = visual.TextBox2(
-    win, text='Sisesta tekst siia...', font='Open Sans',
-    pos=(0, 0),     letterHeight=0.05, size=(None, None), borderWidth=2.0,
-    color='white', colorSpace='rgb', opacity=None, bold=False, italic=False,
-    lineSpacing=1.0, padding=0.0, anchor='center', fillColor=None, borderColor=None,
-    flipHoriz=False, flipVert=False, editable=True, name='textbox', autoLog=False,
-)
 
 pic_dir = _thisDir + '\\images'  # folder with the experimental pictures
 gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
@@ -475,7 +476,6 @@ def draw_routine(blockNum, lines):
                     win.timeOnFlip(brush, 'tStartRefresh')
                     brush.setAutoDraw(True)
 
-                #
                 if buttons[0] > 0 or (t > waitClickFor and wait) and frameN > 1:
 
                     if wait:
@@ -499,6 +499,9 @@ def draw_routine(blockNum, lines):
                         else:
                             dist_travelled = 0
                     # and hovering(click_next, mouse):
+                else:
+                    for line in lines:
+                        line.contrast = (waitClickFor-t)/waitClickFor
                 if not buttons[0] and button_pressed:  #
                     if len(dist):  # save actual performance
                         points[trialNumber] = round(np.max(dist), 2)
@@ -594,10 +597,12 @@ def feedback(xys_points, blockNum):
     framesCount = 0
     name = expInfo['participant'] + '_dif_' + \
         str(dif) + '_out_' + '_tr_' + str(blockNum)
-    output = cv2.VideoWriter(
-        _thisDir+"\\videos\\"+name+".mp4v", vid_cod, 20.0, (640, 480))
+    if expInfo['webcam'] == '1':
+        output = cv2.VideoWriter(
+            _thisDir+"\\videos\\"+name+".mp4v", vid_cod, 20.0, (640, 480))
     while nSelfs * nTrials > 0:
-        video_rec(output)
+        if expInfo['webcam'] == '1':
+            video_rec(output)
         buttons = mouse.getPressed()
         if 'harjutuspl' in txt:
             arrow1.draw()
@@ -631,9 +636,11 @@ def insert_text(txt):
         brush.reset()
         buttons = mouse.getPressed()
         txt_dic['def0'].draw()
-        textbox.draw()
+        # textbox.draw()
+        txt_dic['def2'].text = 'Sisesta tekst siia...'
+        txt_dic['def2'].draw()
         win.flip()
-    thisExp.addData('odd', textbox.text)
+    thisExp.addData('odd', txt_dic['def2'].text)
 
 
 # this is the start of the experiment loop
