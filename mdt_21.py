@@ -82,14 +82,17 @@ if expInfo['frameRate'] != None:
     frameDur = 1.0 / round(expInfo['frameRate'])
 else:
     frameDur = 1.0 / 60.0  # could not measure, so guess
-
+# see also: https://towardsdatascience.com/lightning-fast-video-reading-in-python-c1438771c4e6
 if expInfo['webcam'] == '1':
     import cv2
     vid_capture = cv2.VideoCapture(0)
-
+    vid_reso = (int(vid_capture.get(3)), int(vid_capture.get(4)))
     vid_cod = cv2.VideoWriter_fourcc(*'XVID')
     output = cv2.VideoWriter(
-        _thisDir+"\\videos\\START_"+expInfo['participant'] + ".mp4v", vid_cod, 20.0, (640, 480))
+        _thisDir+"\\videos\\START_"+expInfo['participant'] + ".mp4v", vid_cod, 20.0, vid_reso)  # 640, 480 ... 800×600, 960×720, 1024×768,
+# Noldus: Advised minimum resolution is 640x480 pixels (200x200 pixels for the face area). If the resolution is
+# larger than 1024x1024 pixels, the image is downscaled to maximum 1024x1024 pixels, keeping the original
+# aspect ratio. The image to be analyzed can be rotated 90°, 180°, or 270°.
 
 
 def video_rec(output):
@@ -588,6 +591,7 @@ def feedback(xys_points, blockNum):
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
     txt = xlsx_dic['blocks'].intro_text_content[blockNum]
+    rec = xlsx_dic['blocks'].videoRec[blockNum]
     # construct, item, label_low, label_high
     default_text0.pos, default_text1.pos = text_pos['bar_high'], text_pos['bar_low']
     default_text0.text, default_text1.text = '100%', '0%'
@@ -597,11 +601,11 @@ def feedback(xys_points, blockNum):
     framesCount = 0
     name = expInfo['participant'] + '_dif_' + \
         str(dif) + '_out_' + '_tr_' + str(blockNum)
-    if expInfo['webcam'] == '1':
+    if expInfo['webcam'] == '1' and rec:
         output = cv2.VideoWriter(
-            _thisDir+"\\videos\\"+name+".mp4v", vid_cod, 20.0, (640, 480))
+            _thisDir+"\\videos\\"+name+".mp4v", vid_cod, 20.0, vid_reso)
     while nSelfs * nTrials > 0:
-        if expInfo['webcam'] == '1':
+        if expInfo['webcam'] == '1' and rec:
             video_rec(output)
         buttons = mouse.getPressed()
         if 'harjutuspl' in txt:
