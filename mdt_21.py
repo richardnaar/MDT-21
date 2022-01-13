@@ -89,7 +89,7 @@ if expInfo['webcam'] == '1':
     vid_reso = (int(vid_capture.get(3)), int(vid_capture.get(4)))
     vid_cod = cv2.VideoWriter_fourcc(*'XVID')
     output = cv2.VideoWriter(
-        _thisDir+"\\videos\\START_"+expInfo['participant'] + ".mp4v", vid_cod, 20.0, vid_reso)  # 640, 480 ... 800×600, 960×720, 1024×768,
+        _thisDir+"\\videos\\START_"+expInfo['participant'] + ".avi", vid_cod, 20.0, vid_reso)  # 640, 480 ... 800×600, 960×720, 1024×768,
 # Noldus: Advised minimum resolution is 640x480 pixels (200x200 pixels for the face area). If the resolution is
 # larger than 1024x1024 pixels, the image is downscaled to maximum 1024x1024 pixels, keeping the original
 # aspect ratio. The image to be analyzed can be rotated 90°, 180°, or 270°.
