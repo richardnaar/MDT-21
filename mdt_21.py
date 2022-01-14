@@ -21,7 +21,7 @@ from psychopy.constants import (NOT_STARTED)
 from psychopy import gui, visual, core, data, event, clock  # , logging, sound, colors
 import psychopy
 import cart_dist as cd
-# import validation as val
+#import validation as val
 psychopy.useVersion('latest')
 
 
@@ -57,8 +57,8 @@ dataDir = _thisDir + '\\data\\'
 filename2 = expInfo['participant'] + '-positions' + date + '.txt'
 
 with open(dataDir+filename2, 'a') as file_object:
-    file_object.write('participant' + ';' + 'failed_trial' + ';' + 'difficulty' + ';' + 'outlier' + ';'
-                      'trial' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + ';' + '\n')
+    file_object.write('participant' + ';' + 'training' + ';' + 'trial_repaet' + ';' + 'difficulty' + ';' + 'outlier' + ';' 'block_n' + ';'
+                      'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + ';' + '\n')
 
 
 # Setup the Window
@@ -87,9 +87,11 @@ if expInfo['webcam'] == '1':
     import cv2
     vid_capture = cv2.VideoCapture(0)
     vid_reso = (int(vid_capture.get(3)), int(vid_capture.get(4)))
+    vid_format = ".avi"
+    vid_sr = 30
     vid_cod = cv2.VideoWriter_fourcc(*'XVID')
     output = cv2.VideoWriter(
-        _thisDir+"\\videos\\START_"+expInfo['participant'] + ".avi", vid_cod, 20.0, vid_reso)  # 640, 480 ... 800×600, 960×720, 1024×768,
+        _thisDir+"\\videos\\START_"+expInfo['participant'] + vid_format, vid_cod, vid_sr, vid_reso)  # 640, 480 ... 800×600, 960×720, 1024×768,
 # Noldus: Advised minimum resolution is 640x480 pixels (200x200 pixels for the face area). If the resolution is
 # larger than 1024x1024 pixels, the image is downscaled to maximum 1024x1024 pixels, keeping the original
 # aspect ratio. The image to be analyzed can be rotated 90°, 180°, or 270°.
@@ -116,7 +118,6 @@ def cam_close():
 
 
 if expInfo['eyetracker'] == '1':
-    import validation as val
     val.calibrate(win)
     # import needed modules
     import tobii_research as tr
@@ -170,7 +171,13 @@ default_text1 = visual.TextStim(win=win, name='text1',
                                 color='white', colorSpace='rgb', opacity=1,
                                 languageStyle='LTR', depth=-1.0)
 
-default_text2 = visual.TextBox2(
+default_text2 = visual.TextStim(win=win, name='text2',
+                                text='juku', font='Arial', pos=(0, 0),
+                                height=0.04, wrapWidth=1.25, ori=0,
+                                color='white', colorSpace='rgb', opacity=1,
+                                languageStyle='LTR', depth=-1.0)
+
+box_text = visual.TextBox2(
     win, text='Sisesta tekst siia...', font='Open Sans',
     pos=(0, 0),     letterHeight=0.05, size=(None, None), borderWidth=2.0,
     color='white', colorSpace='rgb', opacity=None, bold=False, italic=False,
@@ -183,7 +190,7 @@ txt_dic = {'def0': default_text0, 'def1': default_text1, 'def2': default_text2}
 
 # 'bar_high': (0, 0.43), 'bar_low': (0, -0.43)
 text_pos = {'intro': (0.7, -0.35), 'distance': (-0.5, 0.42), 'timer': (-0.5, 0.38),
-            'middle': (0, 0), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_low': (-0.55, -0.3),
+            'middle': (0, 0), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_mid': (-0.6, 0), 'bar_low': (-0.6, -0.3),
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
 brush = visual.Brush(win=win, name='brush',
@@ -200,13 +207,12 @@ click_next = visual.ShapeStim(
     lineWidth=0,     colorSpace='rgb',  lineColor=[1, 1, 1], fillColor=[1, 1, 1],
     opacity=1, depth=-2.0, interpolate=True)
 
-
 pic_dir = _thisDir + '\\images'  # folder with the experimental pictures
 gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                         'gauss6.png', units='height', size=(1, 0.67), name='gauss', contrast=0.75)  # , contrast=0.75 size 1.1, 0.67
+                         'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  # , contrast=0.75 size 1.1, 0.67
 
 
-gauss.pos, n_bars, ecc, ys = (0, 0), 4, [0.1, 0.3], [0]*4  # -0.1
+gauss.pos, n_bars, ecc, ys = (-0.01, 0), 4, [0.1, 0.3], [0]*4  # -0.1
 ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
 ys[3] = float(np.random.uniform(low=-0.25, high=0, size=1))
 ys = [round(i, 2) for i in ys]
@@ -255,19 +261,18 @@ for i in range(max_lines):
 def find_points(dif, outlier):
     y_circles = [0]*4
     # outlier = 1
-    while np.std(y_circles) < 0.025:
-        if dif:  # low=-0.15, high=-0.05, size=4
-            y_circles[0:4] = np.random.uniform(low=-0.1, high=0, size=4)
-            if outlier:
-                y_circles[3] = float(np.random.uniform(
-                    low=0.05, high=0.15, size=1))
-            y_circles = (y_circles[0:4]-np.mean(y_circles))-0.05
-        else:
-            y_circles[0:4] = np.random.uniform(low=0.05, high=0.15, size=4)
-            if outlier:
-                y_circles[3] = float(np.random.uniform(
-                    low=-0.1, high=0, size=1))
-            y_circles = (y_circles[0:4]-np.mean(y_circles))+0.1
+    if dif:  # low=-0.15, high=-0.05, size=4
+        y_circles[0:4] = np.random.uniform(low=-0.1, high=0, size=4)
+        if outlier:
+            y_circles[3] = float(np.random.uniform(
+                low=0.05, high=0.15, size=1))
+        y_circles = (y_circles[0:4]-np.mean(y_circles))-0.05
+    else:
+        y_circles[0:4] = np.random.uniform(low=0.05, high=0.15, size=4)
+        if outlier:
+            y_circles[3] = float(np.random.uniform(
+                low=-0.1, high=0, size=1))
+        y_circles = (y_circles[0:4]-np.mean(y_circles))+0.1
     # y_circles = [0.1]*4
     y_circles = [round(i, 2) for i in y_circles]
     y_circles = np.flip(np.sort(y_circles))
@@ -307,11 +312,26 @@ end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
 odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Jätkamiseks vajuta paremat hiireklahvi...)'
 
 excel_sheets = {'blocks': 'blocks1', 'self_report': 'self_report'}
+reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.'
 
 xlsx_dic = {}
 for n, name in enumerate(excel_sheets):
     xls_file = pd.ExcelFile(excel_sheets[name] + '.xlsx')
     xlsx_dic["{0}".format(name)] = xls_file.parse()
+
+# randomization
+rando_idx = [0]*len(xlsx_dic['blocks'])
+for i in range(len(xlsx_dic['blocks'])):
+    if 'Kognitiivse efektiivsuse mõõtmise plokk:' in xlsx_dic['blocks'].intro_text_content[i]:
+        rando_idx[i] = 1
+
+start_idx = rando_idx.index(1)
+n_rnd_trials = sum(rando_idx)
+end_idx = start_idx+n_rnd_trials
+
+rando_idx = list(range(len(rando_idx)))
+rando_idx[start_idx:end_idx -
+          1] = np.random.choice(range(start_idx, end_idx), n_rnd_trials, replace=False)
 
 
 def check_quit():
@@ -394,10 +414,10 @@ def save_eyeData():
                 w.writerow(row)
 
 
-def draw_routine(blockNum, lines):
+def draw_routine(blockNum, lines, global_n):
     dist_travelled = 0
     frameTolerance = 0.001  # how close to onset before 'same' frame
-    trialNumber, trialRepeat = 0, False
+    trialNumberInDraw, trialRepeat = 0, False
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     dif = xlsx_dic['blocks'].dif[blockNum]
     points = [[]]*nTrials
@@ -412,19 +432,19 @@ def draw_routine(blockNum, lines):
     while nTrials:
         timeStamp2BSend = True
         mouse = event.Mouse(win=win)
-        mouse.x, mouse.y = list([0]), list([0])  # [], []
+        mouse.x, mouse.y = [], []  # list([0]), list([0])  # [], []
         # if it is the end of the routine loop
-        if trialNumber > nTrials:
+        if trialNumberInDraw > nTrials:
             brush.reset()
             brush.status = NOT_STARTED
             win.flip()
             break
         # if it is not the end of the routine yet
-        elif trialNumber < nTrials:
+        elif trialNumberInDraw < nTrials:
             dur, current_dist, wait, frameN = 0, 0, True, -1
             button_pressed = False
             dist = list()
-            n = [4, 7][dif]
+            n = [4, 6][dif]
             if not trialRepeat:  # prepare lines
                 lines, angle, start, end, length = prep_lines(
                     n, dif, lines)
@@ -490,11 +510,12 @@ def draw_routine(blockNum, lines):
                     if buttons[0] > 0:  # and not hovering(click_next, mouse)
                         button_pressed = True
                         # Cartesian distance from point to line segment
-                        j = cd.lineseg_dists(
-                            ([[mouse.x[-1], mouse.y[-1]]]), np.asarray(start), np.asarray(end))
-                        current_dist = min(j)*100
-                        # add the smallest one to the counter
-                        dist.append(min(j))
+                        if len(mouse.x):
+                            j = cd.lineseg_dists(
+                                ([[mouse.x[-1], mouse.y[-1]]]), np.asarray(start), np.asarray(end))
+                            current_dist = min(j)*100
+                            # add the smallest one to the counter
+                            dist.append(min(j))
 
                         if len(mouse.x) > 2:
                             dist_travelled = dist_travelled + np.sqrt(
@@ -507,7 +528,7 @@ def draw_routine(blockNum, lines):
                         line.contrast = (waitClickFor-t)/waitClickFor
                 if not buttons[0] and button_pressed:  #
                     if len(dist):  # save actual performance
-                        points[trialNumber] = round(np.max(dist), 2)
+                        points[trialNumberInDraw] = round(np.max(dist), 2)
                     brush.reset()
                     win.flip()
                     save_timeStamps('brush_offset_')
@@ -535,36 +556,42 @@ def draw_routine(blockNum, lines):
                 check_quit()
         # expInfo['error tolerance']
 
-        if not len(dist) or np.max(dist) > float(expInfo['error tolerance']) or dist_travelled < length*0.8 and trialRepeatCount < 2:
+        # and trialRepeatCount < 2:
+        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < length*0.8 or dur > 8):
             brush.reset()
-            trialNumber = trialNumber
             draw_text('Saad uue katse!', default_text0, click_next)
             txt_dic['def0'].pos = text_pos['distance']
             trialRepeat = True
             trialRepeatCount += 1
         else:
-            trialNumber += 1
+            trialNumberInDraw += 1
             trialRepeat, trialRepeatCount = False, 0
 
-        if trialNumber < nTrials:
-            with open(dataDir+filename2, 'a') as file_object:
-                file_object.write(expInfo['participant'] + ';' + str(trialRepeat) + ';' + str(dif) + ';' + str(outlier) + ';' +
-                                  str(blockNum-2) + ';' + str(start) + ';' + str(end) + ';' + str(mouse.x) + ';' + str(mouse.y) + ';' + '\n')
-            if trialRepeat and trialNumber == 0:
-                thisExp.addData('trial_n', 1)
+        if trialNumberInDraw <= nTrials:
+            block = global_n-start_idx+1
+            if block < 0:
+                block = 0
+            if global_n-start_idx+1 > 0:
+                isTraining = False
             else:
-                thisExp.addData('trial_n', trialNumber)
+                isTraining = True
+            with open(dataDir+filename2, 'a') as file_object:
+                file_object.write(expInfo['participant'] + ';' + str(isTraining) + ';' + str(trialRepeat) + ';' + str(dif) + ';' + str(outlier) + ';' +
+                                  str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(mouse.x) + ';' + str(mouse.y) + ';' + '\n')
+
+            thisExp.addData('local_trial_n', trialNumberInDraw)
             thisExp.addData('trial_repaet', trialRepeat)
-            thisExp.addData('block_n', blockNum-2)
+            thisExp.addData('block_n', block)
             thisExp.addData('difficulty', dif)
             thisExp.addData('line_col', col_list[dif])  # list(lines[1].color)
             thisExp.addData('outlier', outlier)
             thisExp.addData('brush_RT', round(t - draw_start, 3))
+            thisExp.addData('training', isTraining)
             if len(dist):
                 thisExp.addData('brush_max_dev', np.max(dist))
                 thisExp.addData('brush_mean_dev', np.mean(dist))
 
-            if trialNumber < nTrials-1:
+            if trialNumberInDraw < nTrials:
                 thisExp.nextEntry()
     y_circles = find_points(dif, outlier)
     if nTrials:
@@ -580,6 +607,7 @@ def draw_routine(blockNum, lines):
 
 def feedback(xys_points, blockNum):
     # isFB=xlsx_dic['blocks'].nSelf[blockNum]
+    tThisFlipGlobal = win.getFutureFlipTime(clock=None)
     timeStamp2BSend = True
     dif = xlsx_dic['blocks'].dif[blockNum]
     out = xlsx_dic['blocks'].outlier[blockNum]
@@ -593,9 +621,9 @@ def feedback(xys_points, blockNum):
     txt = xlsx_dic['blocks'].intro_text_content[blockNum]
     rec = xlsx_dic['blocks'].videoRec[blockNum]
     # construct, item, label_low, label_high
-    default_text0.pos, default_text1.pos = text_pos['bar_high'], text_pos['bar_low']
-    default_text0.text, default_text1.text = '100%', '0%'
-    default_text0.contrast, default_text1.contrast = 0.75, 0.75
+    txt_dic['def0'].pos, txt_dic['def1'].pos, txt_dic['def2'].pos = text_pos['bar_high'], text_pos['bar_mid'], text_pos['bar_low']
+    txt_dic['def0'].text, txt_dic['def1'].text, txt_dic['def2'].text = '100%', '50%', '0%'
+    txt_dic['def0'].contrast, txt_dic['def1'].contrast, txt_dic['def2'].contrast = 0.75, 0.75, 0.75
     circles.xys = xys_points
     mouse = event.Mouse(win=win)
     framesCount = 0
@@ -603,20 +631,22 @@ def feedback(xys_points, blockNum):
         str(dif) + '_out_' + '_tr_' + str(blockNum)
     if expInfo['webcam'] == '1' and rec:
         output = cv2.VideoWriter(
-            _thisDir+"\\videos\\"+name+".mp4v", vid_cod, 20.0, vid_reso)
+            _thisDir+"\\videos\\"+name+vid_format, vid_cod, vid_sr, vid_reso)
     while nSelfs * nTrials > 0:
         if expInfo['webcam'] == '1' and rec:
             video_rec(output)
         buttons = mouse.getPressed()
-        if 'harjutuspl' in txt:
+        if 'harjutuspl' in txt and framesCount > float(expInfo['frameRate']):
             arrow1.draw()
             arrow2.draw()
         if not sum(buttons):
-            default_text0.draw()
-            default_text1.draw()
             gauss.draw()
+            txt_dic['def0'].draw()
+            txt_dic['def1'].draw()
+            txt_dic['def2'].draw()
             rects.draw()
-            circles.draw()
+            if framesCount > float(expInfo['frameRate'])/3:
+                circles.draw()
             win.flip()
             if expInfo['eyetracker'] == '1'and timeStamp2BSend:
                 thisExp.addData('fb_onset_in_sys_time_at_tracker',
@@ -624,27 +654,26 @@ def feedback(xys_points, blockNum):
                 thisExp.addData('fb_onset_in_py_time',
                                 globalClock.getTime())
                 timeStamp2BSend = False
-            if framesCount > 60*3:
+            if framesCount > float(expInfo['frameRate'])*3:
                 click_next.draw()
             check_quit()
             framesCount += 1
-        elif sum(buttons) and hovering(click_next, mouse) and framesCount > 60*3:
+        elif sum(buttons) and hovering(click_next, mouse) and framesCount > float(expInfo['frameRate'])*3:
             break
 
 
 def insert_text(txt):
     txt_dic['def0'].pos = text_pos['slf_txt']
     txt_dic['def0'].text = txt
+    box_text.text = 'Sisesta tekst siia...'
     buttons = mouse.getPressed()
     while not buttons[2]:
         brush.reset()
         buttons = mouse.getPressed()
         txt_dic['def0'].draw()
-        # textbox.draw()
-        txt_dic['def2'].text = 'Sisesta tekst siia...'
-        txt_dic['def2'].draw()
+        box_text.draw()
         win.flip()
-    thisExp.addData('odd', txt_dic['def2'].text)
+    thisExp.addData('odd', box_text.text)
 
 
 # this is the start of the experiment loop
@@ -673,16 +702,19 @@ while runExperiment and (len(theseKeys) < 1):
 #        win.close(), core.quit()
     # if it is not the end of the experiment yet
     elif trialNumber < nTrials:
-        nSelfs = xlsx_dic['blocks'].nSelf[trialNumber]
-        intro_text = xlsx_dic['blocks'].intro_text_content[trialNumber]
+        nSelfs = xlsx_dic['blocks'].nSelf[rando_idx[trialNumber]]
+        intro_text = xlsx_dic['blocks'].intro_text_content[rando_idx[trialNumber]]
+        if 'Kognitiivse efektiivsuse mõõtmise plokk:' in intro_text:
+            intro_text = intro_text + ' ' + \
+                str(trialNumber-start_idx+1) + reminder_text
         draw_text(intro_text, txt_dic['def0'], click_next)
-        xys_points = draw_routine(trialNumber, lines)
-        feedback(xys_points, trialNumber)
+        xys_points = draw_routine(rando_idx[trialNumber], lines, trialNumber)
+        feedback(xys_points, rando_idx[trialNumber])
         save_timeStamps('fb_offset_')
         brush.reset()
         brush.status = NOT_STARTED
         if nSelfs:
-            whichSelfs = xlsx_dic['blocks'].whichSelf[trialNumber]
+            whichSelfs = xlsx_dic['blocks'].whichSelf[rando_idx[trialNumber]]
             starti, endi = int(whichSelfs[0]), int(whichSelfs[2])
             for n, txt in enumerate(xlsx_dic['self_report'].item[starti:endi]):
                 low = xlsx_dic['self_report'].label_high[starti+n]
@@ -700,6 +732,7 @@ while runExperiment and (len(theseKeys) < 1):
 
 
 save_eyeData()
-cam_close()
+if expInfo['webcam'] == '1':
+    cam_close()
 win.close(), core.quit()
 # io.quit()
