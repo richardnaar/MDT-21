@@ -1,1 +1,0 @@
-add cv2 to: C:\Program Files\PsychoPy\Lib\site-packages

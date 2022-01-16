@@ -162,19 +162,19 @@ for i in col_list:
 default_text0 = visual.TextStim(win=win, name='text0',
                                 text='juku', font='Arial', pos=(0, 0),
                                 height=0.04, wrapWidth=1.25, ori=0,
-                                color='white', colorSpace='rgb', opacity=1,
+                                color='white', colorSpace='rgb', opacity=.75,
                                 languageStyle='LTR', depth=-1.0)
 
 default_text1 = visual.TextStim(win=win, name='text1',
                                 text='juku', font='Arial', pos=(0, 0),
                                 height=0.04, wrapWidth=1.25, ori=0,
-                                color='white', colorSpace='rgb', opacity=1,
+                                color='white', colorSpace='rgb', opacity=.75,
                                 languageStyle='LTR', depth=-1.0)
 
 default_text2 = visual.TextStim(win=win, name='text2',
                                 text='juku', font='Arial', pos=(0, 0),
                                 height=0.04, wrapWidth=1.25, ori=0,
-                                color='white', colorSpace='rgb', opacity=1,
+                                color='white', colorSpace='rgb', opacity=.75,
                                 languageStyle='LTR', depth=-1.0)
 
 box_text = visual.TextBox2(
@@ -330,8 +330,8 @@ n_rnd_trials = sum(rando_idx)
 end_idx = start_idx+n_rnd_trials
 
 rando_idx = list(range(len(rando_idx)))
-rando_idx[start_idx:end_idx -
-          1] = np.random.choice(range(start_idx, end_idx), n_rnd_trials, replace=False)
+rando_idx[start_idx:end_idx] = np.random.choice(
+    range(start_idx, end_idx), n_rnd_trials, replace=False)
 
 
 def check_quit():
@@ -612,18 +612,18 @@ def feedback(xys_points, blockNum):
     dif = xlsx_dic['blocks'].dif[blockNum]
     out = xlsx_dic['blocks'].outlier[blockNum]
     circles.colors = col_dict[col_list[dif]]
-    if blockNum == 3:
+    txt = xlsx_dic['blocks'].intro_text_content[blockNum]
+    if 'lõpus näed ka tagasisidet.' in txt:
         circles.opacities, rects.contrs = [1, 0, 0, 0], [0.5, 0.2, 0.2, 0.2]
-    elif blockNum == 4:
+    else:  # blockNum == 4:
         circles.opacities, rects.contrs = 1, 0.5
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
-    txt = xlsx_dic['blocks'].intro_text_content[blockNum]
     rec = xlsx_dic['blocks'].videoRec[blockNum]
     # construct, item, label_low, label_high
     txt_dic['def0'].pos, txt_dic['def1'].pos, txt_dic['def2'].pos = text_pos['bar_high'], text_pos['bar_mid'], text_pos['bar_low']
     txt_dic['def0'].text, txt_dic['def1'].text, txt_dic['def2'].text = '100%', '50%', '0%'
-    txt_dic['def0'].contrast, txt_dic['def1'].contrast, txt_dic['def2'].contrast = 0.75, 0.75, 0.75
+    txt_dic['def0'].opacity, txt_dic['def1'].opacity, txt_dic['def2'].opacity = 0.75, 0.75, 0.75
     circles.xys = xys_points
     mouse = event.Mouse(win=win)
     framesCount = 0
