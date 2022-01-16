@@ -613,9 +613,9 @@ def feedback(xys_points, blockNum):
     out = xlsx_dic['blocks'].outlier[blockNum]
     circles.colors = col_dict[col_list[dif]]
     if blockNum == 3:
-        circles.opacities, rects.contrs = [1, 0, 0, 0], [1, 0.2, 0.2, 0.2]
+        circles.opacities, rects.contrs = [1, 0, 0, 0], [0.5, 0.2, 0.2, 0.2]
     elif blockNum == 4:
-        circles.opacities, rects.contrs = 1, 1
+        circles.opacities, rects.contrs = 1, 0.5
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
     txt = xlsx_dic['blocks'].intro_text_content[blockNum]
