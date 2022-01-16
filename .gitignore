@@ -4,3 +4,5 @@ data
 settings.json
 slnx.sqlite
 .suo
+.vscode
+__pycache__
