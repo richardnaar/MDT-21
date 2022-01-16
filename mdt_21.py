@@ -58,7 +58,7 @@ filename2 = expInfo['participant'] + '-positions' + date + '.txt'
 
 with open(dataDir+filename2, 'a') as file_object:
     file_object.write('participant' + ';' + 'training' + ';' + 'trial_repaet' + ';' + 'difficulty' + ';' + 'outlier' + ';' 'block_n' + ';'
-                      'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + ';' + '\n')
+                      'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + '\n')
 
 
 # Setup the Window
@@ -147,7 +147,6 @@ if expInfo['eyetracker'] == '1':
     # start getting gaze data
     my_eyetracker.subscribe_to(
         tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
-
 
 col_list = ['red', 'blue']
 random.shuffle(col_list)
@@ -577,7 +576,7 @@ def draw_routine(blockNum, lines, global_n):
                 isTraining = True
             with open(dataDir+filename2, 'a') as file_object:
                 file_object.write(expInfo['participant'] + ';' + str(isTraining) + ';' + str(trialRepeat) + ';' + str(dif) + ';' + str(outlier) + ';' +
-                                  str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(mouse.x) + ';' + str(mouse.y) + ';' + '\n')
+                                  str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(mouse.x) + ';' + str(mouse.y) + '\n')
 
             thisExp.addData('local_trial_n', trialNumberInDraw)
             thisExp.addData('trial_repaet', trialRepeat)
