@@ -433,7 +433,7 @@ def draw_routine(blockNum, lines, global_n):
     while nTrials:
         timeStamp2BSend = True
         mouse = event.Mouse(win=win)
-        mouse.x, mouse.y = [], []  # list([0]), list([0])  # [], []
+        mouse.x, mouse.y = 0, 0  # list([0]), list([0])  # [], []
         # if it is the end of the routine loop
         if trialNumberInDraw > nTrials:
             brush.reset()
