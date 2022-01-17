@@ -31,7 +31,7 @@ os.chdir(_thisDir)  # set as a current dir
 
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
-expInfo = {'participant': '', 'error tolerance': 8,
+expInfo = {'participant': 'test', 'error tolerance': 8,
            'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'webcam': '0', 'escape key': 'escape'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -86,6 +86,8 @@ else:
 if expInfo['webcam'] == '1':
     import cv2
     vid_capture = cv2.VideoCapture(0)
+    vid_capture.set(3, 1280)
+    vid_capture.set(4, 720)
     vid_reso = (int(vid_capture.get(3)), int(vid_capture.get(4)))
     vid_format = ".avi"
     vid_sr = 30
