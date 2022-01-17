@@ -433,7 +433,7 @@ def draw_routine(blockNum, lines, global_n):
     while nTrials:
         timeStamp2BSend = True
         mouse = event.Mouse(win=win)
-        mouse.x, mouse.y = 0, 0  # list([0]), list([0])  # [], []
+        mouse.x, mouse.y = list([0]), list([0])  # [], []
         # if it is the end of the routine loop
         if trialNumberInDraw > nTrials:
             brush.reset()
@@ -628,6 +628,7 @@ def feedback(xys_points, blockNum):
     circles.xys = xys_points
     mouse = event.Mouse(win=win)
     framesCount = 0
+    breakLoop = False
     name = expInfo['participant'] + '_dif_' + \
         str(dif) + '_out_' + '_tr_' + str(blockNum)
     if expInfo['webcam'] == '1' and rec:
@@ -640,7 +641,7 @@ def feedback(xys_points, blockNum):
         if 'harjutuspl' in txt and framesCount > float(expInfo['frameRate']):
             arrow1.draw()
             arrow2.draw()
-        if not sum(buttons):
+        if not sum(buttons) or framesCount < float(expInfo['frameRate'])*3:
             gauss.draw()
             txt_dic['def0'].draw()
             txt_dic['def1'].draw()
