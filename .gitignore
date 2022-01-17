@@ -6,3 +6,5 @@ slnx.sqlite
 .suo
 .vscode
 __pycache__
+.vs/MDT-21/project-colors.json
+.vs/VSWorkspaceState.json
