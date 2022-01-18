@@ -275,7 +275,7 @@ def calibrate(win):
     # All Trials are done
     # End experiment
     tracker.setConnectionState(False)
-
+    return results
 
 # io.quit()
 # core.quit()

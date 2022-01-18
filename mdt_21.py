@@ -61,6 +61,13 @@ with open(dataDir+filename2, 'a') as file_object:
                       'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + '\n')
 
 
+# with open(dataDir+filename2+'_calibration', 'a') as file_object:
+#    file_object.write(results['passed'] + ';' + results['positions_failed_processing']  + ';' + results['reporting_unit_type'] + ';' + results['min_error'] + ';' + results['max_error'] + ';' + results['mean_error'])
+
+#        print("min_error:", results['min_error'])
+#        print("max_error:", results['max_error'])
+#        print("mean_error:", results['mean_error'])
+
 # Setup the Window
 win = visual.Window(
     size=[1920, 1080], fullscr=False, screen=0,
@@ -120,7 +127,13 @@ def cam_close():
 
 
 if expInfo['eyetracker'] == '1':
-    val.calibrate(win)
+    results = val.calibrate(win)
+    with open(dataDir+filename2+'_calibration', 'a') as file_object:
+        file_object.write('participant' + ';' + 'passed' + ';' + 'units' +
+                          ';' + 'min_error' + ';' + 'max_error' + ';' + 'mean_error' + '\n')
+        file_object.write(results['passed'] + ';' + results['positions_failed_processing'] + ';' +
+                          results['reporting_unit_type'] + ';' + results['min_error'] + ';' + results['max_error'] + ';' + results['mean_error'])
+
     # import needed modules
     import tobii_research as tr
     import time
