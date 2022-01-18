@@ -1,6 +1,4 @@
-# outlieri arvutamine
-# kas endiselt jookseb kokku?
-# algusesse sissejuhatav slaid
+# MDT 2021
 
 from __future__ import absolute_import, division
 import math
@@ -128,12 +126,19 @@ def cam_close():
 
 if expInfo['eyetracker'] == '1':
     results = val.calibrate(win)
-    calib_name = expInfo['participant'] + '-calibration' + date + '.txt'
-    with open(dataDir+calib_name, 'a') as file_object:
-        file_object.write('participant' + ';' + 'passed' + ';' + 'units' +
-                          ';' + 'min_error' + ';' + 'max_error' + ';' + 'mean_error' + '\n')
-        file_object.write(str(results['passed']) + ';' + str(results['positions_failed_processing']) + ';' +
-                          str(results['reporting_unit_type']) + ';' + str(results['min_error']) + ';' + str(results['max_error']) + ';' + str(results['mean_error']))
+#    calib_name = expInfo['participant'] + '-calibration' + date + '.txt'
+#    with open(dataDir+calib_name, 'a') as file_object:
+#        file_object.write('participant' + ';' + 'passed' + ';' + 'units' +
+#                          ';' + 'min_error' + ';' + 'max_error' + ';' + 'mean_error' + '\n')
+#        file_object.write(str(results['passed']) + ';' + str(results['positions_failed_processing']) + ';' +
+#                          str(results['reporting_unit_type']) + ';' + str(results['min_error']) + ';' + str(results['max_error']) + ';' + str(results['mean_error']))
+
+    thisExp.addData('eye_passed', results['passed'])
+    thisExp.addData('failed_pos_count', results['positions_failed_processing'])
+    thisExp.addData('eye_units', results['reporting_unit_type'])
+    thisExp.addData('eye_min_error', results['min_error'])
+    thisExp.addData('eye_max_error', results['max_error'])
+    thisExp.addData('eye_mean_error', results['mean_error'])
 
     # import needed modules
     import tobii_research as tr
