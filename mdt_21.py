@@ -59,13 +59,6 @@ with open(dataDir+filename2, 'a') as file_object:
                       'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + '\n')
 
 
-# with open(dataDir+filename2+'_calibration', 'a') as file_object:
-#    file_object.write(results['passed'] + ';' + results['positions_failed_processing']  + ';' + results['reporting_unit_type'] + ';' + results['min_error'] + ';' + results['max_error'] + ';' + results['mean_error'])
-
-#        print("min_error:", results['min_error'])
-#        print("max_error:", results['max_error'])
-#        print("mean_error:", results['mean_error'])
-
 # Setup the Window
 win = visual.Window(
     size=[1920, 1080], fullscr=False, screen=0,
@@ -401,6 +394,10 @@ def save_timeStamps(event_name):
 
 def sound_trigger(event_name, start):
     if expInfo['triggers'] == '1' and start:
+        snd_dic[event_name].set_volume(1)
+        snd_dic[event_name].play()
+    elif expInfo['triggers'] == '1':
+        snd_dic[event_name].set_volume(0.1)
         snd_dic[event_name].play()
 
 
@@ -467,6 +464,32 @@ def save_eyeData():
             for row in gaze_list:
                 # write row in csv
                 w.writerow(row)
+
+
+def draw_save_data(global_n, block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier, start, end, x, y, draw_start, dist, t):
+    if global_n-start_idx+1 > 0:
+        isTraining = False
+    else:
+        isTraining = True
+    with open(dataDir+filename2, 'a') as file_object:
+        file_object.write(expInfo['participant'] + ';' + str(isTraining) + ';' + str(trialRepeat) + ';' + str(dif) + ';' + str(outlier) + ';' +
+                          str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(x) + ';' + str(y) + '\n')
+    # if trialNumberInDraw < 1:
+    #     trialNumberInDraw += 1
+    thisExp.addData('local_trial_n', trialNumberInDraw)
+    thisExp.addData('trial_repaet', trialRepeat)
+    thisExp.addData('block_n', block)
+    thisExp.addData('difficulty', dif)
+    thisExp.addData('line_col', col_list[dif])  # list(lines[1].color)
+    thisExp.addData('outlier', outlier)
+    thisExp.addData('brush_RT', round(t - draw_start, 3))
+    thisExp.addData('training', isTraining)
+    if len(dist):
+        thisExp.addData('brush_max_dev', np.max(dist))
+        thisExp.addData('brush_mean_dev', np.mean(dist))
+
+    if trialNumberInDraw < nTrials:
+        thisExp.nextEntry()
 
 
 def draw_routine(blockNum, lines, global_n):
@@ -601,58 +624,37 @@ def draw_routine(blockNum, lines, global_n):
                 # if frameN > 2:
                 #     click_next.draw()
                 win.flip()
-                if expInfo['eyetracker'] == '1' and timeStamp2BSend:
-                    thisExp.addData('brush_onset_in_sys_time_at_tracker',
-                                    tr.get_system_time_stamp())
-                    thisExp.addData('brush_onset_in_py_time',
-                                    globalClock.getTime())
+                if timeStamp2BSend:
+                    save_timeStamps('brush_onset')
                     timeStamp2BSend = False
 
-                if trigger2BSend and block:
+                if trialNumberInDraw <= nTrials:
+                    block = global_n-start_idx+1
+                    if block < 0:
+                        block = 0  # training blocks
+
+                if trigger2BSend and block > 0:
                     event_name = '1'+'1' + str(dif) + str(outlier)
                     sound_trigger(event_name, 1)
                     trigger2BSend = False
 
                 check_quit()
-        # expInfo['error tolerance']
-
         # and trialRepeatCount < 2:
         if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < length*0.8 or dur > 8):
             brush.reset()
             draw_text('Saad uue katse!', default_text0, click_next)
             txt_dic['def0'].pos = text_pos['distance']
             trialRepeat = True
-            trialRepeatCount += 1
+
+            draw_save_data(global_n, block, nTrials, trialNumberInDraw, trialRepeat,
+                           dif, outlier, start, end, mouse.x, mouse.y, draw_start, dist, t)
+
         else:
-            trialNumberInDraw += 1
             trialRepeat, trialRepeatCount = False, 0
+            draw_save_data(global_n, block, nTrials, trialNumberInDraw, trialRepeat,
+                           dif, outlier, start, end, mouse.x, mouse.y, draw_start, dist, t)
+            trialNumberInDraw += 1
 
-        if trialNumberInDraw <= nTrials:
-            block = global_n-start_idx+1
-            if block < 0:
-                block = 0
-            if global_n-start_idx+1 > 0:
-                isTraining = False
-            else:
-                isTraining = True
-            with open(dataDir+filename2, 'a') as file_object:
-                file_object.write(expInfo['participant'] + ';' + str(isTraining) + ';' + str(trialRepeat) + ';' + str(dif) + ';' + str(outlier) + ';' +
-                                  str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(mouse.x) + ';' + str(mouse.y) + '\n')
-
-            thisExp.addData('local_trial_n', trialNumberInDraw)
-            thisExp.addData('trial_repaet', trialRepeat)
-            thisExp.addData('block_n', block)
-            thisExp.addData('difficulty', dif)
-            thisExp.addData('line_col', col_list[dif])  # list(lines[1].color)
-            thisExp.addData('outlier', outlier)
-            thisExp.addData('brush_RT', round(t - draw_start, 3))
-            thisExp.addData('training', isTraining)
-            if len(dist):
-                thisExp.addData('brush_max_dev', np.max(dist))
-                thisExp.addData('brush_mean_dev', np.mean(dist))
-
-            if trialNumberInDraw < nTrials:
-                thisExp.nextEntry()
     y_circles = find_points(dif, outlier)
     if nTrials:
         for yi in range(len(points)):
@@ -709,13 +711,10 @@ def feedback(xys_points, blockNum, block_n):
             if framesCount > float(expInfo['frameRate'])/3:
                 circles.draw()
             win.flip()
-            if expInfo['eyetracker'] == '1'and timeStamp2BSend:
-                thisExp.addData('fb_onset_in_sys_time_at_tracker',
-                                tr.get_system_time_stamp())
-                thisExp.addData('fb_onset_in_py_time',
-                                globalClock.getTime())
+            if timeStamp2BSend:
+                save_timeStamps('fb_onset_')
                 timeStamp2BSend = False
-            if trigger2BSend and block_n:
+            if trigger2BSend and block_n > 0:
                 event_name = '1'+'0' + str(dif) + str(out)
                 sound_trigger(event_name, 1)
                 trigger2BSend = False
@@ -724,6 +723,9 @@ def feedback(xys_points, blockNum, block_n):
             check_quit()
             framesCount += 1
         elif sum(buttons) and hovering(click_next, mouse) and framesCount > float(expInfo['frameRate'])*3:
+            save_timeStamps('fb_offset_')
+            if block_n > 0:
+                sound_trigger(event_name, 0)
             break
 
 
