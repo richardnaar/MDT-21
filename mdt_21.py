@@ -30,7 +30,7 @@ os.chdir(_thisDir)  # set as a current dir
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
 expInfo = {'participant': 'test', 'error tolerance': 8,
-           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'webcam': '0', 'escape key': 'escape'}
+           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'triggers': '1', 'webcam': '0', 'escape key': 'escape'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -231,6 +231,36 @@ pic_dir = _thisDir + '\\images'  # folder with the experimental pictures
 gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
                          'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  # , contrast=0.75 size 1.1, 0.67
 
+if expInfo['triggers'] == '1':
+    from pygame import mixer
+    mixer.init()
+
+    snd_dir = _thisDir + '\\sounds'  # folder with the experimental pictures
+
+    position = ['1', '0']
+    difficulty = ['1', '0']
+    outlier = ['1', '0']
+
+    mixer.init()
+    snd_dic = {}
+    for p in position:
+        for d in difficulty:
+            for o in outlier:
+                snd_dic['1'+p+d+o] = mixer.Sound(snd_dir+'\\'+'1'+p+d+o+'.wav')
+
+
+gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
+                         'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  # , contrast=0.75 size 1.1, 0.67
+
+
+def loadpics(picture_directory, pics, endindx, listname, units, picSize):
+    for file in range(0, endindx):
+        listname.append(visual.ImageStim(win=win, image=picture_directory + '\\' + str(
+            pics[file]), units=units, size=picSize, name=str(pics[file])))
+
+#listname = images[indx]
+# current_image.draw()
+
 
 gauss.pos, n_bars, ecc, ys = (-0.01, 0), 4, [0.1, 0.3], [0]*4  # -0.1
 ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
@@ -331,7 +361,7 @@ def draw_text(text2draw, textElement, click_next):
 end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
 odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Jätkamiseks vajuta paremat hiireklahvi...)'
 
-excel_sheets = {'blocks': 'blocks1', 'self_report': 'self_report'}
+excel_sheets = {'blocks': 'blocks', 'self_report': 'self_report'}
 reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.'
 
 xlsx_dic = {}
@@ -367,6 +397,11 @@ def save_timeStamps(event_name):
                         tr.get_system_time_stamp())
         thisExp.addData(event_name+'_in_py_time',
                         globalClock.getTime())
+
+
+def sound_trigger(event_name, start):
+    if expInfo['triggers'] == '1' and start:
+        snd_dic[event_name].play()
 
 
 def prep_lines(n, dif, lines):
@@ -444,13 +479,13 @@ def draw_routine(blockNum, lines, global_n):
     txt_dic['def0'].pos = text_pos['distance']
     txt_dic['def1'].pos = text_pos['timer']
     outlier = xlsx_dic['blocks'].outlier[blockNum]
-
+    block = 0
     # reset timers
     t, waitClickFor, duration = 0, 5, float('inf')
 
     trialRepeatCount = 0
     while nTrials:
-        timeStamp2BSend = True
+        timeStamp2BSend, trigger2BSend = True, True
         mouse = event.Mouse(win=win)
         mouse.x, mouse.y = list([0]), list([0])  # [], []
         # if it is the end of the routine loop
@@ -573,6 +608,11 @@ def draw_routine(blockNum, lines, global_n):
                                     globalClock.getTime())
                     timeStamp2BSend = False
 
+                if trigger2BSend and block:
+                    event_name = '1'+'1' + str(dif) + str(outlier)
+                    sound_trigger(event_name, 1)
+                    trigger2BSend = False
+
                 check_quit()
         # expInfo['error tolerance']
 
@@ -622,13 +662,13 @@ def draw_routine(blockNum, lines, global_n):
                 # actual feedback
                 xys_circles[yi][1] = round(-7*(points[yi]-0.025), 2)
         thisExp.addData('xys_points', xys_circles)
-    return xys_circles
+    return xys_circles, block
 
 
-def feedback(xys_points, blockNum):
+def feedback(xys_points, blockNum, block_n):
     # isFB=xlsx_dic['blocks'].nSelf[blockNum]
     tThisFlipGlobal = win.getFutureFlipTime(clock=None)
-    timeStamp2BSend = True
+    timeStamp2BSend, trigger2BSend = True, True
     dif = xlsx_dic['blocks'].dif[blockNum]
     out = xlsx_dic['blocks'].outlier[blockNum]
     circles.colors = col_dict[col_list[dif]]
@@ -648,9 +688,9 @@ def feedback(xys_points, blockNum):
     mouse = event.Mouse(win=win)
     framesCount = 0
     breakLoop = False
-    name = expInfo['participant'] + '_dif_' + \
-        str(dif) + '_out_' + '_tr_' + str(blockNum)
     if expInfo['webcam'] == '1' and rec:
+        name = expInfo['participant'] + '_dif_' + \
+            str(dif) + '_out_' + str(out) + '_block_' + str(block_n)
         output = cv2.VideoWriter(
             _thisDir+"\\videos\\"+name+vid_format, vid_cod, vid_sr, vid_reso)
     while nSelfs * nTrials > 0:
@@ -675,6 +715,10 @@ def feedback(xys_points, blockNum):
                 thisExp.addData('fb_onset_in_py_time',
                                 globalClock.getTime())
                 timeStamp2BSend = False
+            if trigger2BSend and block_n:
+                event_name = '1'+'0' + str(dif) + str(out)
+                sound_trigger(event_name, 1)
+                trigger2BSend = False
             if framesCount > float(expInfo['frameRate'])*3:
                 click_next.draw()
             check_quit()
@@ -729,8 +773,9 @@ while runExperiment and (len(theseKeys) < 1):
             intro_text = intro_text + ' ' + \
                 str(trialNumber-start_idx+1) + reminder_text
         draw_text(intro_text, txt_dic['def0'], click_next)
-        xys_points = draw_routine(rando_idx[trialNumber], lines, trialNumber)
-        feedback(xys_points, rando_idx[trialNumber])
+        xys_points, block_n = draw_routine(
+            rando_idx[trialNumber], lines, trialNumber)
+        feedback(xys_points, rando_idx[trialNumber], block_n)
         save_timeStamps('fb_offset_')
         brush.reset()
         brush.status = NOT_STARTED
