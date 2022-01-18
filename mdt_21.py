@@ -128,11 +128,12 @@ def cam_close():
 
 if expInfo['eyetracker'] == '1':
     results = val.calibrate(win)
-    with open(dataDir+filename2+'_calibration', 'a') as file_object:
+    calib_name = expInfo['participant'] + '-calibration' + date + '.txt'
+    with open(dataDir+calib_name, 'a') as file_object:
         file_object.write('participant' + ';' + 'passed' + ';' + 'units' +
                           ';' + 'min_error' + ';' + 'max_error' + ';' + 'mean_error' + '\n')
-        file_object.write(results['passed'] + ';' + results['positions_failed_processing'] + ';' +
-                          results['reporting_unit_type'] + ';' + results['min_error'] + ';' + results['max_error'] + ';' + results['mean_error'])
+        file_object.write(str(results['passed']) + ';' + str(results['positions_failed_processing']) + ';' +
+                          str(results['reporting_unit_type']) + ';' + str(results['min_error']) + ';' + str(results['max_error']) + ';' + str(results['mean_error']))
 
     # import needed modules
     import tobii_research as tr
