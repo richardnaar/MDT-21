@@ -17,7 +17,7 @@ from psychopy.constants import (NOT_STARTED)
 from psychopy import gui, visual, core, data, event, clock
 import psychopy
 import cart_dist as cd  # this is used to find mouse distance from the closest line
-# import validation as val
+import validation as val  # used for calibration and validation
 psychopy.useVersion('latest')
 
 
@@ -29,9 +29,9 @@ os.chdir(_thisDir)  # set as a current dir
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
 expInfo = {'participant': 'test', 'error tolerance': 20, 'length tolerance percent': 40,
-           'fb mode': ['type A', 'type B'],  'eyetracker': '0', 'triggers': '1', 'escape key': 'escape', 'disp cond': '1',
+           'fb mode': ['type A', 'type B'],  'triggers': '1', 'escape key': 'escape', 'disp cond': '1',
            'dif baseline min': -0.1, 'easy baselline min': 0.05, 'point uncertinty': 0.085, 'outlier distance': 0.1,
-           'easy lines n': 4, 'diff lines n': 6, 'line length min': 0.15, 'line length max': 0.25}
+           'easy lines n': 4, 'diff lines n': 6, 'line length min': 0.15, 'line length max': 0.25, 'tracker': list(['tobii', 'mouse', 'none'])}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -84,9 +84,10 @@ if expInfo['frameRate'] != None:
     frameDur = 1.0 / round(expInfo['frameRate'])
 else:
     frameDur = 1.0 / 60.0  # could not measure, so guess
-
-if expInfo['eyetracker'] == '1':
-    results = val.calibrate(win)
+# self._calibration_args
+if not expInfo['tracker'] == 'none':
+    # Eye tracker to use ('mouse', 'eyelink', 'gazepoint', or 'tobii')
+    results = val.calibrate(win, expInfo['tracker'])
 #    calib_name = expInfo['participant'] + '-calibration' + date + '.txt'
 #    with open(dataDir+calib_name, 'a') as file_object:
 #        file_object.write('participant' + ';' + 'passed' + ';' + 'units' +
@@ -95,40 +96,46 @@ if expInfo['eyetracker'] == '1':
 #                          str(results['reporting_unit_type']) + ';' + str(results['min_error']) + ';' + str(results['max_error']) + ';' + str(results['mean_error']))
 
     thisExp.addData('eye_passed', results['passed'])
-    thisExp.addData('failed_pos_count', results['positions_failed_processing'])
+    thisExp.addData('failed_pos_count',
+                    results['positions_failed_processing'])
     thisExp.addData('eye_units', results['reporting_unit_type'])
     thisExp.addData('eye_min_error', results['min_error'])
     thisExp.addData('eye_max_error', results['max_error'])
     thisExp.addData('eye_mean_error', results['mean_error'])
 
-    # import needed modules
-    import tobii_research as tr
-    import time
-    import csv
+    if expInfo['tracker'] == 'tobii':
+        # import needed modules
+        global tr
+        import tobii_research as tr
 
-    # find eye trackers
-    found_eyetrackers = tr.find_all_eyetrackers()
-    # select first eye tracker
-    my_eyetracker = found_eyetrackers[0]
+        # import time
+        # import csv
 
-    gaze_list = []
+        # find eye trackers
+        found_eyetrackers = tr.find_all_eyetrackers()
+        # select first eye tracker
+        global my_eyetracker
+        my_eyetracker = found_eyetrackers[0]
 
-    # create call back to get gaze data
-    def gaze_data_callback(gaze_data):
-        gaze_list.append([gaze_data['system_time_stamp'],
-                          gaze_data['device_time_stamp'],
-                          gaze_data['left_gaze_point_on_display_area'],
-                          gaze_data['left_gaze_point_validity'],
-                          gaze_data['left_pupil_diameter'],
-                          gaze_data['left_pupil_validity'],
-                          gaze_data['right_gaze_point_on_display_area'],
-                          gaze_data['right_gaze_point_validity'],
-                          gaze_data['right_pupil_diameter'],
-                          gaze_data['right_pupil_validity']])
+        gaze_list = []
 
-    # start getting gaze data
-    my_eyetracker.subscribe_to(
-        tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
+        # create call back to get gaze data
+        def gaze_data_callback(gaze_data):
+            gaze_list.append([gaze_data['system_time_stamp'],
+                              gaze_data['device_time_stamp'],
+                              gaze_data['left_gaze_point_on_display_area'],
+                              gaze_data['left_gaze_point_validity'],
+                              gaze_data['left_pupil_diameter'],
+                              gaze_data['left_pupil_validity'],
+                              gaze_data['right_gaze_point_on_display_area'],
+                              gaze_data['right_gaze_point_validity'],
+                              gaze_data['right_pupil_diameter'],
+                              gaze_data['right_pupil_validity']])
+
+        # start getting gaze data
+        my_eyetracker.subscribe_to(
+            tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
+
 
 col_list = ['red', 'blue']
 random.shuffle(col_list)
@@ -139,30 +146,15 @@ for i in col_list:
     for j, k in enumerate(col_dict[i]):
         col_dict[i][j] = round((k/255)*2 - 1, 2)
 
+# prepare text
+txt_dic = {}
+for txtStim in range(4):
+    txt_dic['def'+str(txtStim)] = visual.TextStim(win=win, name='text'+str(txtStim),
+                                                  text='juku', font='Arial', pos=(0, 0),
+                                                  height=0.04, wrapWidth=1.25, ori=0,
+                                                  color='white', colorSpace='rgb', opacity=.75,
+                                                  languageStyle='LTR', depth=-1.0)
 
-default_text0 = visual.TextStim(win=win, name='text0',
-                                text='juku', font='Arial', pos=(0, 0),
-                                height=0.04, wrapWidth=1.25, ori=0,
-                                color='white', colorSpace='rgb', opacity=.75,
-                                languageStyle='LTR', depth=-1.0)
-
-default_text1 = visual.TextStim(win=win, name='text1',
-                                text='juku', font='Arial', pos=(0, 0),
-                                height=0.04, wrapWidth=1.25, ori=0,
-                                color='white', colorSpace='rgb', opacity=.75,
-                                languageStyle='LTR', depth=-1.0)
-
-default_text2 = visual.TextStim(win=win, name='text2',
-                                text='juku', font='Arial', pos=(0, 0),
-                                height=0.04, wrapWidth=1.25, ori=0,
-                                color='white', colorSpace='rgb', opacity=.75,
-                                languageStyle='LTR', depth=-1.0)
-
-default_text3 = visual.TextStim(win=win, name='text3',
-                                text='juku', font='Arial', pos=(0, 0.42),
-                                height=0.04, wrapWidth=1.25, ori=0,
-                                color='white', colorSpace='rgb', opacity=.75,
-                                languageStyle='LTR', depth=-1.0)
 
 box_text = visual.TextBox2(
     win, text='Sisesta tekst siia...', font='Open Sans',
@@ -172,13 +164,8 @@ box_text = visual.TextBox2(
     flipHoriz=False, flipVert=False, editable=True, name='text2', autoLog=False,
 )
 
-
-txt_dic = {'def0': default_text0, 'def1': default_text1,
-           'def2': default_text2, 'def3': default_text3}
-
-# 'bar_high': (0, 0.43), 'bar_low': (0, -0.43)
 text_pos = {'intro': (0.7, -0.35), 'distance': (-0.5, 0.42), 'timer': (-0.5, 0.38),
-            'middle': (0, 0), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_mid': (-0.6, 0), 'bar_low': (-0.6, -0.3),
+            'middle': (0, 0), 'middle_high':  (0, 0.42), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_mid': (-0.6, 0), 'bar_low': (-0.6, -0.3),
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
 brush = visual.Brush(win=win, name='brush',
@@ -227,9 +214,6 @@ def loadpics(picture_directory, pics, endindx, listname, units, picSize):
     for file in range(0, endindx):
         listname.append(visual.ImageStim(win=win, image=picture_directory + '\\' + str(
             pics[file]), units=units, size=picSize, name=str(pics[file])))
-
-# listname = images[indx]
-# current_image.draw()
 
 
 gauss.pos, n_bars, ecc, ys = (-0.01, 0), 4, [0.1, 0.3], [0]*4  # -0.1
@@ -399,7 +383,7 @@ def check_quit():
 
 
 def save_timeStamps(event_name):
-    if expInfo['eyetracker'] == '1':
+    if expInfo['tracker'] == 'tobii':
         thisExp.addData(event_name+'_in_sys_time_at_tracker',
                         tr.get_system_time_stamp())
         thisExp.addData(event_name+'_in_py_time',
@@ -450,7 +434,7 @@ def prep_lines(n, dif, lines):
 
 
 def save_eyeData():
-    if expInfo['eyetracker'] == '1':
+    if expInfo['tracker'] == 'tobii':
         # stop getting gaze data
         my_eyetracker.unsubscribe_from(
             tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
@@ -469,7 +453,7 @@ def save_eyeData():
                 w.writerow(row)
 
 
-def draw_save_data(global_n, block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier, start, end, x, y, draw_start, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs):
+def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier, start, end, x, y, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs):
 
     thisExp.addData('local_trial_n', trialNumberInDraw)
     thisExp.addData('trial_repaet', trialRepeat)
@@ -493,25 +477,56 @@ def draw_save_data(global_n, block, nTrials, trialNumberInDraw, trialRepeat, dif
                           str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(x) + ';' + str(y) + '\n')
 
 
-def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
-    dist_travelled = 0
-    frameTolerance = 0.001  # how close to onset before 'same' frame
-    trialNumberInDraw, trialRepeat = 0, False
+def extract_data_for_draw_routine(blockNum):
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     dif = xlsx_dic['blocks'].dif[blockNum]
     points = [[]]*nTrials
-    txt_dic['def0'].pos = text_pos['distance']
-    txt_dic['def1'].pos = text_pos['timer']
     outlier = xlsx_dic['blocks'].outlier[blockNum]
     trialId = xlsx_dic['blocks'].id[blockNum]
-    block = 0
+    return nTrials, dif, points, outlier, trialId
+
+
+def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, tThisFlip, frameTolerance, n):
+    if n:
+        for i in range(n):
+            if elementName[i].status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+                # keep track of start time/frame for later
+                elementName[i].frameNStart = frameN  # exact frame index
+                # local t and not account for scr refresh
+                elementName[i].tStart = t
+                # on global time
+                elementName[i].tStartRefresh = tThisFlipGlobal
+                # time at next scr refresh
+                win.timeOnFlip(elementName[i], 'tStartRefresh')
+                elementName[i].setAutoDraw(True)
+    else:
+        if elementName.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+            elementName.frameNStart = frameN  # exact frame index
+            elementName.tStart = t  # local t and not account for scr refresh
+            elementName.tStartRefresh = tThisFlipGlobal  # on global time
+            # time at next scr refresh
+            win.timeOnFlip(elementName, 'tStartRefresh')
+            elementName.setAutoDraw(True)
+
+
+def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
+    nTrials, dif, points, outlier, trialId = extract_data_for_draw_routine(
+        blockNum)
+    dist_travelled, block = 0, 0
+    frameTolerance = 0.001  # how close to onset before 'same' frame
+    trialNumberInDraw, trialRepeat = 0, False
+
+    txt_dic['def0'].pos = text_pos['distance']
+    txt_dic['def1'].pos = text_pos['timer']
+
     # reset timers
     t, waitClickFor, duration = 0, 5, float('inf')
 
     while nTrials:
         timeStamp2BSend, trigger2BSend = True, True
         mouse = event.Mouse(win=win)
-        mouse.x, mouse.y = list(), list()  # kui jookseb kokku, siis list([0])
+        # kui jookseb kokku, siis list([0]) *kuigi selle häda on selles, et siis läheb hiiretrajektoori pikkuse arvutamine sassi
+        mouse.x, mouse.y = list(), list()
         # if it is the end of the routine loop
         if trialNumberInDraw > nTrials:
             brush.reset()
@@ -523,7 +538,6 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
             dur, current_dist, wait, frameN = 0, 0, True, -1
             button_pressed = False
             dist = list()
-            # n = [4, 6][dif]
             n = line_list[dif]
             if not trialRepeat:  # prepare lines
                 lines, angle, start, end, length = prep_lines(
@@ -549,28 +563,13 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
 
                 # number of completed frames (so 0 is the first frame)
                 frameN = frameN + 1
-                # display lines
-                for i in range(n):
-                    if lines[i].status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
-                        # # keep track of start time/frame for later
-                        lines[i].frameNStart = frameN  # exact frame index
-                        # local t and not account for scr refresh
-                        lines[i].tStart = t
-                        # on global time
-                        lines[i].tStartRefresh = tThisFlipGlobal
-                        # time at next scr refresh
-                        win.timeOnFlip(lines[i], 'tStartRefresh')
-                        lines[i].setAutoDraw(True)
+                prepare_elements_for_drawing(
+                    lines, frameN, t, tThisFlipGlobal, tThisFlip, frameTolerance, n)
 
                 # *brush* updates
                 if brush.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
-                    # keep track of start time/frame for later
-                    brush.frameNStart = frameN  # exact frame index
-                    brush.tStart = t  # local t and not account for scr refresh
-                    brush.tStartRefresh = tThisFlipGlobal  # on global time
-                    # time at next scr refresh
-                    win.timeOnFlip(brush, 'tStartRefresh')
-                    brush.setAutoDraw(True)
+                    prepare_elements_for_drawing(
+                        brush, frameN, t, tThisFlipGlobal, tThisFlip, frameTolerance,  0)
 
                 if buttons[0] > 0 or (t > waitClickFor and wait):  # and frameN > 1
 
@@ -616,14 +615,11 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 if not wait:
                     dur = t - draw_start
 
-                # draw things hereq
                 txt_dic['def0'].text = 'täpsus: ' + "%.2f" % current_dist
                 txt_dic['def1'].text = 'kestus: ' + "%.2f" % dur
                 txt_dic['def0'].draw()
                 txt_dic['def1'].draw()
 
-                # if frameN > 2:
-                #     click_next.draw()
                 win.flip()
                 if timeStamp2BSend:
                     save_timeStamps('brush_onset')
@@ -647,17 +643,18 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
         line_len_tol = 1-float(expInfo['length tolerance percent'])/100
         if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < length*line_len_tol or dur > 8):
             brush.reset()
-            draw_text('Saad uue katse!', default_text0, click_next, isTraining)
+            draw_text('Saad uue katse!',
+                      txt_dic['def0'], click_next, isTraining)
             txt_dic['def0'].pos = text_pos['distance']
             trialRepeat = True
-            draw_save_data(global_n, block, nTrials, trialNumberInDraw, trialRepeat,
-                           dif, outlier, start, end, mouse.x, mouse.y, draw_start, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs)
+            draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat,
+                           dif, outlier, start, end, mouse.x, mouse.y, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs)
 
         else:
             if trialNumberInDraw < nTrials:
                 trialRepeat = False
-                draw_save_data(global_n, block, nTrials, trialNumberInDraw, trialRepeat,
-                               dif, outlier, start, end, mouse.x, mouse.y, draw_start, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs)
+                draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat,
+                               dif, outlier, start, end, mouse.x, mouse.y, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs)
             trialNumberInDraw += 1
 
     y_circles = find_points(dif, outlier)
@@ -672,25 +669,45 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
     return xys_circles, block
 
 
-def feedback(xys_points, blockNum, block_n, isTraining):
-    tThisFlipGlobal = win.getFutureFlipTime(clock=None)
-    timeStamp2BSend, trigger2BSend = True, True
+def extract_data_for_fb(blockNum):
     dif = xlsx_dic['blocks'].dif[blockNum]
     out = xlsx_dic['blocks'].outlier[blockNum]
-    circles.colors = col_dict[col_list[dif]]
     txt = xlsx_dic['blocks'].intro_text_content[blockNum]
+    nTrials = xlsx_dic['blocks'].nTrial[blockNum]
+    nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
+    return dif, out, nTrials, nSelfs, txt
+
+
+def prepare_aesthetics_for_fb(dif, out, xys_points, txt):
+    circles.colors = col_dict[col_list[dif]]
     if 'lõpus näed ka tagasisidet.' in txt:
         circles.opacities, rects.contrs = [1, 0, 0, 0], [0.5, 0.2, 0.2, 0.2]
     else:  # blockNum == 4:
         circles.opacities, rects.contrs = 1, 0.5
-    nTrials = xlsx_dic['blocks'].nTrial[blockNum]
-    nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
     # construct, item, label_low, label_high
     txt_dic['def0'].pos, txt_dic['def1'].pos, txt_dic['def2'].pos = text_pos['bar_high'], text_pos['bar_mid'], text_pos['bar_low']
+    if expInfo['disp cond']:
+        txt_dic['def3'].pos = text_pos['middle_high']
     txt_dic['def0'].text, txt_dic['def1'].text, txt_dic['def2'].text = '100%', '50%', '0%'
     txt_dic['def0'].opacity, txt_dic['def1'].opacity, txt_dic['def2'].opacity = 0.75, 0.75, 0.75
     txt_dic['def3'].text = 'diff: ' + str(dif) + ' out: ' + str(out)
     circles.xys = xys_points
+
+
+def extract_data_for_fb(blockNum):
+    nTrials = xlsx_dic['blocks'].nTrial[blockNum]
+    dif = xlsx_dic['blocks'].dif[blockNum]
+    out = xlsx_dic['blocks'].outlier[blockNum]
+    txt = xlsx_dic['blocks'].intro_text_content[blockNum]
+    nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
+    return dif, out, nTrials, nSelfs, txt
+
+
+def feedback(xys_points, blockNum, block_n, isTraining):
+    timeStamp2BSend, trigger2BSend = True, True
+    dif, out, nTrials, nSelfs, txt = extract_data_for_fb(blockNum)
+    prepare_aesthetics_for_fb(dif, out, xys_points, txt)
+
     mouse = event.Mouse(win=win)
     framesCount, t, fb_satrt = 0, 0, 0
     while nSelfs * nTrials > 0:
@@ -755,57 +772,71 @@ def insert_text(txt):
     thisExp.addData('odd', box_text.text)
 
 
+def extract_data_for_main(trialNumber):
+    isTraining = xlsx_dic['blocks'].training[rando_idx[trialNumber]]
+    nSelfs = xlsx_dic['blocks'].nSelf[rando_idx[trialNumber]]
+    intro_text = xlsx_dic['blocks'].intro_text_content[rando_idx[trialNumber]]
+    if 'Kognitiivse efektiivsuse mõõtmise plokk:' in intro_text:
+        intro_text = intro_text + ' ' + \
+            str(trialNumber-start_idx+1) + reminder_text
+    return isTraining, nSelfs, intro_text
+
+
+def self_report_wrapper(nSelfs, trialNumber):
+    if nSelfs:
+        whichSelfs = xlsx_dic['blocks'].whichSelf[rando_idx[trialNumber]]
+        starti, endi = int(whichSelfs[0]), int(whichSelfs[2])
+        for n, txt in enumerate(xlsx_dic['self_report'].item[starti:endi]):
+            low = xlsx_dic['self_report'].label_high[starti+n]
+            high = xlsx_dic['self_report'].label_low[starti+n]
+            vas.present(win, thisExp, expInfo['escape key'], clock, visual, event,
+                        core, text_pos, txt, high, low)
+            construct = xlsx_dic['self_report'].construct[starti+n]
+            thisExp.addData('construct', construct)
+            thisExp.nextEntry()
+
+
 trialNumber = 0
 nTrials = len(xlsx_dic['blocks'])
-runExperiment = True
 theseKeys = event.getKeys(keyList=expInfo['escape key'])
+
+runExperiment = True
 while runExperiment and (len(theseKeys) < 1):
     mouse = event.Mouse(win=win)
     buttons = mouse.getPressed()
 
-    # if it is the end of the experiment loop
+    # Experiment over?
     if trialNumber == nTrials:
-            # close and quit
-        insert_text(odd_text)
-        txt_dic['def0'].text = end_text
+        # Close and quit
+        insert_text(odd_text)  # present text box
+        txt_dic['def0'].text = end_text  # goodbye
         txt_dic['def0'].draw()
         win.flip()
         core.wait(2)
-        runExperiment = False
-#        win.close(), core.quit()
-    # if it is not the end of the experiment yet
+        runExperiment = False  # Yep, over!
+    # Not the end of the experiment yet
     elif trialNumber < nTrials:
-        isTraining = xlsx_dic['blocks'].training[rando_idx[trialNumber]]
-        nSelfs = xlsx_dic['blocks'].nSelf[rando_idx[trialNumber]]
-        intro_text = xlsx_dic['blocks'].intro_text_content[rando_idx[trialNumber]]
-        if 'Kognitiivse efektiivsuse mõõtmise plokk:' in intro_text:
-            intro_text = intro_text + ' ' + \
-                str(trialNumber-start_idx+1) + reminder_text
+        isTraining, nSelfs, intro_text = extract_data_for_main(trialNumber)
+
         draw_text(intro_text, txt_dic['def0'],
                   click_next, isTraining)
+        # Run draw routine
         xys_points, block_n = draw_routine(
             rando_idx[trialNumber], lines, trialNumber, isTraining, nSelfs)
+        # Give feedback
         feedback(xys_points, rando_idx[trialNumber], block_n, isTraining)
-        save_timeStamps('fb_offset_')
         brush.reset()
         brush.status = NOT_STARTED
-        if nSelfs:
-            whichSelfs = xlsx_dic['blocks'].whichSelf[rando_idx[trialNumber]]
-            starti, endi = int(whichSelfs[0]), int(whichSelfs[2])
-            for n, txt in enumerate(xlsx_dic['self_report'].item[starti:endi]):
-                low = xlsx_dic['self_report'].label_high[starti+n]
-                high = xlsx_dic['self_report'].label_low[starti+n]
-                vas.present(win, thisExp, expInfo['escape key'], clock, visual, event,
-                            core, text_pos, txt, high, low)
-                construct = xlsx_dic['self_report'].construct[starti+n]
-                thisExp.addData('construct', construct)
-                thisExp.nextEntry()
-    # draw things here
+        # Run assessment routine
+        self_report_wrapper(nSelfs, trialNumber)
+
+    # Filip before next trial
     win.flip()
 
     trialNumber += 1
     theseKeys = event.getKeys(keyList=expInfo['escape key'])
 
-
+# Save eyetracking data
 save_eyeData()
+# Close window and quit
 win.close(), core.quit()

@@ -4,7 +4,7 @@
 Calibrate, validate, run with GC cursor demo / test.
 Select which tracker to use by setting the TRACKER variable below.
 
-* This is a sligthly modified version of the demo provided by PsychoPy    
+* This is a sligthly modified version of the demo provided by PsychoPy 3.6.6   
 
 Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
         PsychoPy2: Experiments in behavior made easy Behav Res 51: 195. 
@@ -19,9 +19,9 @@ from psychopy.iohub.client.eyetracker.validation import TargetStim
 from psychopy.iohub.util import hideWindow, showWindow
 
 
-def calibrate(win):
+def calibrate(win, tracker):
     # Eye tracker to use ('mouse', 'eyelink', 'gazepoint', or 'tobii')
-    TRACKER = 'tobii'
+    TRACKER = tracker
 
     use_unit_type = 'height'
     use_color_type = 'rgb'
@@ -266,13 +266,8 @@ def calibrate(win):
             # Display updated stim on screen.
             flip_time = win.flip()
 
-            # Check any new keyboard char events for a space key.
-            # If one is found, set the trial end variable.
-            #
-            if keyboard.getPresses(keys='space'):
+            if keyboard.getPresses(keys=' '):
                 run_trial = False
-            if keyboard.getPresses(keys='v'):
-                calibrate(win)
             elif core.getTime()-tstart_time > T_MAX:
                 run_trial = False
         win.flip()
@@ -283,10 +278,11 @@ def calibrate(win):
 
     # All Trials are done
     # End experiment
+
     tracker.setConnectionState(False)
+    io.quit()
     return results
 
-# io.quit()
 # core.quit()
 
 
