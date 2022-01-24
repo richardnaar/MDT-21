@@ -108,8 +108,8 @@ if not expInfo['tracker'] == 'none':
         global tr
         import tobii_research as tr
 
-        # import time
-        # import csv
+        import time
+        import csv
 
         # find eye trackers
         found_eyetrackers = tr.find_all_eyetrackers()
