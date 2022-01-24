@@ -1,5 +1,5 @@
 # MDT 2021
-# To do: fullscreen, uncomment import validation as val
+
 
 from __future__ import absolute_import, division
 import math
@@ -40,6 +40,7 @@ if dlg.OK == False:
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 expInfo['psychopyVersion'] = psychopyVersion
+expInfo['date'] = data.getDateStr()  # add a simple timestamp
 
 
 filename = _thisDir + os.sep + \
@@ -56,6 +57,7 @@ thisExp = data.ExperimentHandler(name=expName, version='',
 dataDir = _thisDir + '\\data\\'
 filename2 = expInfo['participant'] + '-positions' + expInfo['date'] + '.txt'
 
+# Prepare mouse position data file
 with open(dataDir+filename2, 'a') as file_object:
     file_object.write('participant' + ';' + 'cond_table_id' + ';' + 'training' + ';' + 'trial_repaet' + ';' + 'difficulty' + ';' + 'outlier' + ';' 'block_n' + ';'
                       'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + '\n')
@@ -63,28 +65,29 @@ with open(dataDir+filename2, 'a') as file_object:
 
 # Setup the Window
 win = visual.Window(
-    size=[1920, 1080], fullscr=False, screen=0,
+    size=[1920, 1080], fullscr=True, screen=0,
     winType='pyglet', allowGUI=False, allowStencil=False,
     monitor='testMonitor', color=[0, 0, 0], colorSpace='rgb',
     blendMode='avg', useFBO=True,
     units='height')
-# Aspect ratio
-# this will be used to find horisontal position of the fb points
+# Aspect ratio - will be used to find horisontal position of the fb points
 aspect = win.size[0]/win.size[1]
 
-# Clocks
-drawClock = core.Clock()
-globalClock = core.Clock()
 
-expInfo['date'] = data.getDateStr()  # add a simple timestamp
-
-# store frame rate of monitor if we can measure it
+# Store frame rate of monitor if we can measure it
 expInfo['frameRate'] = win.getActualFrameRate()
 if expInfo['frameRate'] != None:
     frameDur = 1.0 / round(expInfo['frameRate'])
 else:
     frameDur = 1.0 / 60.0  # could not measure, so guess
-# self._calibration_args
+
+# Clocks
+drawClock = core.Clock()
+globalClock = core.Clock()
+
+# PRAPARE EYE-TRACKING
+
+# Calibration routine and start recording
 if not expInfo['tracker'] == 'none':
     # Eye tracker to use ('mouse', 'eyelink', 'gazepoint', or 'tobii')
     results = val.calibrate(win, expInfo['tracker'])
@@ -98,22 +101,22 @@ if not expInfo['tracker'] == 'none':
     thisExp.addData('eye_mean_error', results['mean_error'])
 
     if expInfo['tracker'] == 'tobii':
-        # import needed modules
+        # Import needed modules
         global tr
         import tobii_research as tr
 
         import time
         import csv
 
-        # find eye trackers
+        # Find eye trackers
         found_eyetrackers = tr.find_all_eyetrackers()
-        # select first eye tracker
+        # Select first eye tracker
         global my_eyetracker
         my_eyetracker = found_eyetrackers[0]
 
         gaze_list = []
 
-        # create call back to get gaze data
+        # Create call back to get gaze data
         def gaze_data_callback(gaze_data):
             gaze_list.append([gaze_data['system_time_stamp'],
                               gaze_data['device_time_stamp'],
@@ -126,21 +129,42 @@ if not expInfo['tracker'] == 'none':
                               gaze_data['right_pupil_diameter'],
                               gaze_data['right_pupil_validity']])
 
-        # start getting gaze data
+        # Start getting gaze data
         my_eyetracker.subscribe_to(
             tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
 
-
-col_list = ['red', 'blue']
-random.shuffle(col_list)
-col_dict = {'red': [230, 25, 75], 'blue':  [0, 120, 200]}
+# Will be used to save the eye data
 
 
-for i in col_list:
-    for j, k in enumerate(col_dict[i]):
-        col_dict[i][j] = round((k/255)*2 - 1, 2)
+def save_eyeData():
+    if expInfo['tracker'] == 'tobii':
+        # stop getting gaze data
+        my_eyetracker.unsubscribe_from(
+            tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
 
-# prepare text
+        # load csv module and write gaze data to disk
+        with open(filename+'_et.csv', 'w', newline='') as f:
+            w = csv.writer(f, delimiter=",")
+            # add header for data selected in callback
+            w.writerow(['system_time', 'tracker_time',
+                        'left_gaze_pos', 'left_gaze_validity', 'left_pupil_diameter', 'left_pupil_validity',
+                        'right_gaze_pos', 'right_gaze_validity', 'right_pupil_diameter', 'right_pupil_validity'])
+
+            # iterate all items
+            for row in gaze_list:
+                # write row in csv
+                w.writerow(row)
+
+
+def save_timeStamps(event_name):
+    if expInfo['tracker'] == 'tobii':
+        thisExp.addData(event_name+'_in_sys_time_at_tracker',
+                        tr.get_system_time_stamp())
+        thisExp.addData(event_name+'_in_py_time',
+                        globalClock.getTime())
+
+
+# Prepare texts
 txt_dic = {}
 for txtStim in range(4):
     txt_dic['def'+str(txtStim)] = visual.TextStim(win=win, name='text'+str(txtStim),
@@ -149,19 +173,12 @@ for txtStim in range(4):
                                                   color='white', colorSpace='rgb', opacity=.75,
                                                   languageStyle='LTR', depth=-1.0)
 
-
-box_text = visual.TextBox2(
-    win, text='Sisesta tekst siia...', font='Open Sans',
-    pos=(0, 0),     letterHeight=0.05, size=(None, None), borderWidth=2.0,
-    color='white', colorSpace='rgb', opacity=None, bold=False, italic=False,
-    lineSpacing=1.0, padding=0.0, anchor='center', fillColor=None, borderColor=None,
-    flipHoriz=False, flipVert=False, editable=True, name='text2', autoLog=False,
-)
-
+# Dictionary of text positions
 text_pos = {'intro': (0.7, -0.35), 'distance': (-0.5, 0.42), 'timer': (-0.5, 0.38),
             'middle': (0, 0), 'middle_high':  (0, 0.42), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_mid': (-0.6, 0), 'bar_low': (-0.6, -0.3),
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
+# Prepare brush
 brush = visual.Brush(win=win, name='brush',
                      lineWidth=1.5,
                      lineColor=[1, 1, 1],
@@ -169,16 +186,7 @@ brush = visual.Brush(win=win, name='brush',
                      opacity=None,
                      buttonRequired=True)
 
-click_next = visual.ShapeStim(
-    win=win, name='next',
-    size=(0.12, 0.12), vertices='triangle',
-    ori=90, pos=(0.7, -0.35),
-    lineWidth=0,     colorSpace='rgb',  lineColor=[1, 1, 1], fillColor=[1, 1, 1],
-    opacity=1, depth=-2.0, interpolate=True)
-
-pic_dir = _thisDir + '\\images'  # folder with the experimental pictures
-gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                         'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  # , contrast=0.75 size 1.1, 0.67
+# TRIGGERS
 
 if expInfo['triggers'] == '1':
     from pygame import mixer
@@ -200,118 +208,24 @@ if expInfo['triggers'] == '1':
                     snd_dic[s+p+d+o] = mixer.Sound(snd_dir+s+p+d+o+'.wav')
 
 
-gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                         'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  # , contrast=0.75 size 1.1, 0.67
+def sound_trigger(event_name):
+    if expInfo['triggers'] == '1':
+        snd_dic[event_name].set_volume(1)
+        snd_dic[event_name].play()
 
 
-def loadpics(picture_directory, pics, endindx, listname, units, picSize):
-    for file in range(0, endindx):
-        listname.append(visual.ImageStim(win=win, image=picture_directory + '\\' + str(
-            pics[file]), units=units, size=picSize, name=str(pics[file])))
+# COLOURS
+# Pepare line colours
+col_list = ['red', 'blue']
+random.shuffle(col_list)
+col_dict = {'red': [230, 25, 75], 'blue':  [0, 120, 200]}
 
+# Convert 255 RGB to normalized units
+for i in col_list:
+    for j, k in enumerate(col_dict[i]):
+        col_dict[i][j] = round((k/255)*2 - 1, 2)
 
-gauss.pos, n_bars, ecc, ys = (-0.01, 0), 4, [0.1, 0.3], [0]*4  # -0.1
-ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
-ys[3] = float(np.random.uniform(low=-0.25, high=0, size=1))
-ys = [round(i, 2) for i in ys]
-random.shuffle(ys)
-field_pos = (0, 0)
-if n_bars == 4:
-    # List of box positions
-    xys_circles = [[ecc[1]*-1, ys[0]], [ecc[0]*-1, ys[1]],
-                   [ecc[0], ys[2]], [ecc[1], ys[3]]]
-    xys_rects = [(ecc[1]*-1, 0), (ecc[0]*-1, 0), (ecc[0], 0), (ecc[1], 0)]
-
-elif n_bars == 1:
-    xys_circles = [[0, ys[0]], [0, ys[1]], [0, ys[2]], [0, ys[3]]]
-    xys_rects = (0, 0)
-
-# Array of circles
-circles = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize=(1, 1),
-                                  fieldShape='square', nElements=4, sizes=(0.1*aspect, 0.03), xys=xys_circles,
-                                  colors=([1.0, 1.0, 1.0]), colorSpace='rgb', opacities=1, oris=0,
-                                  sfs=0, contrs=[1, 1, 1, 1], phases=0, elementTex='sin',
-                                  elementMask='gauss', texRes=48, interpolate=True,
-                                  autoLog=None, maskParams=None)
-
-rects = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize=(1, 1),
-                                fieldShape='square', nElements=n_bars, sizes=text_pos['bar'], xys=xys_rects,
-                                colors=([1.0, 1.0, 1.0]), colorSpace='rgb', opacities=1, oris=0,
-                                sfs=0, contrs=1, phases=0, elementTex='sqr',
-                                elementMask='gauss', texRes=48, interpolate=True,
-                                autoLog=None, maskParams=None)
-
-arrow1 = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                          'arrow1.png', units='height', size=(0.358, 0.15), pos=(-0.15, 0.35), name='arrow1', contrast=0.75)
-
-arrow2 = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                          'arrow2.png', units='height', size=(0.392, 0.165), pos=(0.14, -0.35), name='arrow1', contrast=0.75)
-
-line_list = list([expInfo['easy lines n'], expInfo['diff lines n']])
-max_lines = line_list[1]
-lines = list()
-for i in range(max_lines):
-    line = visual.Line(win, start=(0, 0), end=(0, 0),
-                       lineColor=[0, 0, 0], lineWidth=6)
-    line.status = NOT_STARTED
-    lines.append(line)
-
-
-def find_points(dif, outlier):
-    y_circles = [0]*4
-
-    unc = expInfo['point uncertinty']
-    outlier_dist = expInfo['outlier distance']
-    b1_1 = expInfo['dif baseline min']
-    b1_2 = expInfo['dif baseline min'] + unc
-
-    b2_1 = expInfo['easy baselline min']
-    b2_2 = expInfo['easy baselline min'] + unc
-
-    b1_2_out_low = b1_1 - outlier_dist
-    b1_1_out_low = b1_2_out_low - unc
-
-    b2_2_out_low = b2_1 - outlier_dist
-    b2_1_out_low = b2_2_out_low - unc
-
-    b1_1_out_high = b1_2 + outlier_dist
-    b1_2_out_high = b1_1_out_high + unc
-
-    b2_1_out_high = b2_2 + outlier_dist
-    b2_2_out_high = b2_1_out_high + unc
-
-    if dif:  # if difficult
-        y_circles[0:4] = np.random.uniform(
-            low=b1_1, high=b1_2, size=4)
-        if outlier == 1:  # outlier between b1_1_out_high to b1_2_out_high which is outlier_dist points higher than max in baseline
-            y_circles[3] = float(np.random.uniform(
-                low=b1_1_out_high, high=b1_2_out_high, size=1))
-        elif outlier == -1:  # outlier between b1_1_out_high to b1_2_out_high which is outlier_dist points lower than min in baseline
-            y_circles[3] = float(np.random.uniform(
-                low=b1_1_out_low, high=b1_2_out_low, size=1))
-        # force mean to be -outlier_dist which will have minimal effect in the baseline condition (outlier == 0) and
-        # will rise or lower all the points proportionally to the size of the deviating point in outlier == -1 and
-        # outlier == 1 condition respectively.
-        y_circles = (y_circles[0:4]-np.mean(y_circles)) + (b1_1+b1_2)/2
-    else:
-        y_circles[0:4] = np.random.uniform(low=b2_1, high=b2_2, size=4)
-        if outlier == 1:
-            y_circles[3] = float(np.random.uniform(
-                low=b2_1_out_high, high=b2_2_out_high, size=1))
-        elif outlier == -1:
-            y_circles[3] = float(np.random.uniform(
-                low=b2_1_out_low, high=b2_2_out_low, size=1))
-        y_circles = (y_circles[0:4]-np.mean(y_circles)) + (b2_1+b2_2)/2
-    # round and sort for plotting
-    y_circles = [round(i, 2) for i in y_circles]
-    y_circles = np.flip(np.sort(y_circles))
-    return y_circles
-
-
-def hovering(obj, mouse):
-    if obj.contains(mouse):
-        gotValidClick = True
-        return gotValidClick
+# Used to draw text in the draw and main loops
 
 
 def draw_text(text2draw, textElement, click_next, isTraining):
@@ -343,6 +257,7 @@ def draw_text(text2draw, textElement, click_next, isTraining):
             core.quit()
 
 
+# Additional text to blocks table
 end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
 odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Jätkamiseks vajuta paremat hiireklahvi...)'
 
@@ -354,7 +269,8 @@ for n, name in enumerate(excel_sheets):
     xls_file = pd.ExcelFile(excel_sheets[name] + '.xlsx')
     xlsx_dic["{0}".format(name)] = xls_file.parse()
 
-# randomization
+# RANDOMIZATION HAPPENS HERE
+
 rando_idx = [0]*len(xlsx_dic['blocks'])
 for i in range(len(xlsx_dic['blocks'])):
     if 'Kognitiivse efektiivsuse mõõtmise plokk:' in xlsx_dic['blocks'].intro_text_content[i]:
@@ -368,6 +284,8 @@ rando_idx = list(range(len(rando_idx)))
 rando_idx[start_idx:end_idx] = np.random.choice(
     range(start_idx, end_idx), n_rnd_trials, replace=False)
 
+# Will be used to check escape key
+
 
 def check_quit():
     quitKeys = event.getKeys(keyList=expInfo['escape key'])
@@ -376,18 +294,19 @@ def check_quit():
         core.quit()
 
 
-def save_timeStamps(event_name):
-    if expInfo['tracker'] == 'tobii':
-        thisExp.addData(event_name+'_in_sys_time_at_tracker',
-                        tr.get_system_time_stamp())
-        thisExp.addData(event_name+'_in_py_time',
-                        globalClock.getTime())
+# ELEMENTS RELATED TO THE DRAW ROUTINE
+# Prepare lines
+line_list = list([expInfo['easy lines n'], expInfo['diff lines n']])
+max_lines = line_list[1]
+lines = list()
+for i in range(max_lines):
+    line = visual.Line(win, start=(0, 0), end=(0, 0),
+                       lineColor=[0, 0, 0], lineWidth=6)
+    line.status = NOT_STARTED
+    lines.append(line)
 
 
-def sound_trigger(event_name):
-    if expInfo['triggers'] == '1':
-        snd_dic[event_name].set_volume(1)
-        snd_dic[event_name].play()
+# ELEMENTS RELATED TO THE DRAW ROUTINE
 
 
 def prep_lines(n, dif, lines):
@@ -426,25 +345,7 @@ def prep_lines(n, dif, lines):
 
     return lines, angle, start, end, sum(length)
 
-
-def save_eyeData():
-    if expInfo['tracker'] == 'tobii':
-        # stop getting gaze data
-        my_eyetracker.unsubscribe_from(
-            tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
-
-        # load csv module and write gaze data to disk
-        with open(filename+'_et.csv', 'w', newline='') as f:
-            w = csv.writer(f, delimiter=",")
-            # add header for data selected in callback
-            w.writerow(['system_time', 'tracker_time',
-                        'left_gaze_pos', 'left_gaze_validity', 'left_pupil_diameter', 'left_pupil_validity',
-                        'right_gaze_pos', 'right_gaze_validity', 'right_pupil_diameter', 'right_pupil_validity'])
-
-            # iterate all items
-            for row in gaze_list:
-                # write row in csv
-                w.writerow(row)
+# Will save the trial data
 
 
 def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier, start, end, x, y, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs):
@@ -470,6 +371,8 @@ def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier,
         file_object.write(expInfo['participant'] + ';' + str(trialId) + ';' + str(isTraining) + ';' + str(trialRepeat) + ';' + str(dif) + ';' + str(outlier) + ';' +
                           str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(x) + ';' + str(y) + '\n')
 
+# Extract trial data for draw routine
+
 
 def extract_data_for_draw_routine(blockNum):
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
@@ -478,6 +381,8 @@ def extract_data_for_draw_routine(blockNum):
     outlier = xlsx_dic['blocks'].outlier[blockNum]
     trialId = xlsx_dic['blocks'].id[blockNum]
     return nTrials, dif, points, outlier, trialId
+
+# Initializes some values for lines and the brush in the draw routine
 
 
 def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, tThisFlip, frameTolerance, n):
@@ -501,6 +406,8 @@ def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, tThisF
             # time at next scr refresh
             win.timeOnFlip(elementName, 'tStartRefresh')
             elementName.setAutoDraw(True)
+
+# This monstrum will be used to run the draw routine
 
 
 def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
@@ -660,39 +567,159 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 xys_circles[yi][1] = round(-7*(points[yi]-0.035), 2)
     return xys_circles, block
 
+# FB RELATED ELEMENTS
+
+# Will be used to calculate random points from a uniform distribution
+
+
+def find_points(dif, outlier):
+    y_circles = [0]*4
+
+    unc = expInfo['point uncertinty']
+    outlier_dist = expInfo['outlier distance']
+    b1_1 = expInfo['dif baseline min']
+    b1_2 = expInfo['dif baseline min'] + unc
+
+    b2_1 = expInfo['easy baselline min']
+    b2_2 = expInfo['easy baselline min'] + unc
+
+    b1_2_out_low = b1_1 - outlier_dist  # difficult low max
+    b1_1_out_low = b1_2_out_low - unc  # difficult low min
+
+    b2_2_out_low = b2_1 - outlier_dist  # easy low max
+    b2_1_out_low = b2_2_out_low - unc  # easy low min
+
+    b1_1_out_high = b1_2 + outlier_dist  # difficult high min
+    b1_2_out_high = b1_1_out_high + unc  # difficult high max
+
+    b2_1_out_high = b2_2 + outlier_dist  # difficult high min
+    b2_2_out_high = b2_1_out_high + unc  # difficult high max
+
+    if dif:  # if difficult
+        y_circles[0:4] = np.random.uniform(
+            low=b1_1, high=b1_2, size=4)
+        if outlier == 1:  # outlier between b1_1_out_high to b1_2_out_high which is outlier_dist points higher than max in baseline
+            y_circles[3] = float(np.random.uniform(
+                low=b1_1_out_high, high=b1_2_out_high, size=1))
+        elif outlier == -1:  # outlier between b1_1_out_high to b1_2_out_high which is outlier_dist points lower than min in baseline
+            y_circles[3] = float(np.random.uniform(
+                low=b1_1_out_low, high=b1_2_out_low, size=1))
+        # force mean to be -outlier_dist which will have minimal effect in the baseline condition (outlier == 0) and
+        # will rise or lower all the points proportionally to the size of the deviating point in outlier == -1 and
+        # outlier == 1 condition respectively.
+        y_circles = (y_circles[0:4]-np.mean(y_circles)) + (b1_1+b1_2)/2
+    else:
+        y_circles[0:4] = np.random.uniform(low=b2_1, high=b2_2, size=4)
+        if outlier == 1:
+            y_circles[3] = float(np.random.uniform(
+                low=b2_1_out_high, high=b2_2_out_high, size=1))
+        elif outlier == -1:
+            y_circles[3] = float(np.random.uniform(
+                low=b2_1_out_low, high=b2_2_out_low, size=1))
+        y_circles = (y_circles[0:4]-np.mean(y_circles)) + (b2_1+b2_2)/2
+    # round and sort for plotting
+    y_circles = [round(i, 2) for i in y_circles]
+    y_circles = np.flip(np.sort(y_circles))
+    return y_circles
+
+
+# Prepare "next" button
+click_next = visual.ShapeStim(
+    win=win, name='next',
+    size=(0.12, 0.12), vertices='triangle',
+    ori=90, pos=(0.7, -0.35),
+    lineWidth=0,     colorSpace='rgb',  lineColor=[1, 1, 1], fillColor=[1, 1, 1],
+    opacity=1, depth=-2.0, interpolate=True)
+
+# This will be used to check if mouse is on "click_next" object
+
+
+def hovering(obj, mouse):
+    if obj.contains(mouse):
+        gotValidClick = True
+        return gotValidClick
+
+
+pic_dir = _thisDir + '\\images'  # folder with the images
+gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
+                         'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  # , contrast=0.75 size 1.1, 0.67
+
+
+gauss.pos, n_bars, ecc, ys = (-0.01, 0), 4, [0.1, 0.3], [0]*4  # -0.1
+ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
+ys[3] = float(np.random.uniform(low=-0.25, high=0, size=1))
+ys = [round(i, 2) for i in ys]
+random.shuffle(ys)
+field_pos = (0, 0)
+if n_bars == 4:
+    # List of box positions
+    xys_circles = [[ecc[1]*-1, ys[0]], [ecc[0]*-1, ys[1]],
+                   [ecc[0], ys[2]], [ecc[1], ys[3]]]
+    xys_rects = [(ecc[1]*-1, 0), (ecc[0]*-1, 0), (ecc[0], 0), (ecc[1], 0)]
+
+elif n_bars == 1:
+    xys_circles = [[0, ys[0]], [0, ys[1]], [0, ys[2]], [0, ys[3]]]
+    xys_rects = (0, 0)
+
+# Array of circles
+circles = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize=(1, 1),
+                                  fieldShape='square', nElements=4, sizes=(0.1*aspect, 0.03), xys=xys_circles,
+                                  colors=([1.0, 1.0, 1.0]), colorSpace='rgb', opacities=1, oris=0,
+                                  sfs=0, contrs=[1, 1, 1, 1], phases=0, elementTex='sin',
+                                  elementMask='gauss', texRes=48, interpolate=True,
+                                  autoLog=None, maskParams=None)
+
+# White vertical lines in a gaussian envelope
+rects = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize=(1, 1),
+                                fieldShape='square', nElements=n_bars, sizes=text_pos['bar'], xys=xys_rects,
+                                colors=([1.0, 1.0, 1.0]), colorSpace='rgb', opacities=1, oris=0,
+                                sfs=0, contrs=1, phases=0, elementTex='sqr',
+                                elementMask='gauss', texRes=48, interpolate=True,
+                                autoLog=None, maskParams=None)
+
+# Arrows shown in the training fb
+arrow1 = visual.ImageStim(win=win, image=pic_dir + '\\' +
+                          'arrow1.png', units='height', size=(0.358, 0.15), pos=(-0.15, 0.35), name='arrow1', contrast=0.75)
+
+arrow2 = visual.ImageStim(win=win, image=pic_dir + '\\' +
+                          'arrow2.png', units='height', size=(0.392, 0.165), pos=(0.14, -0.35), name='arrow1', contrast=0.75)
+
+# Extract trial data for fb
+
 
 def extract_data_for_fb(blockNum):
+    nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     dif = xlsx_dic['blocks'].dif[blockNum]
     out = xlsx_dic['blocks'].outlier[blockNum]
     txt = xlsx_dic['blocks'].intro_text_content[blockNum]
-    nTrials = xlsx_dic['blocks'].nTrial[blockNum]
     nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
     return dif, out, nTrials, nSelfs, txt
+
+# Prepares opacities, texts, positions for points and texts for fb
 
 
 def prepare_aesthetics_for_fb(dif, out, xys_points, txt):
     circles.colors = col_dict[col_list[dif]]
     if 'lõpus näed ka tagasisidet.' in txt:
         circles.opacities, rects.contrs = [1, 0, 0, 0], [0.5, 0.2, 0.2, 0.2]
-    else:  # blockNum == 4:
+    else:
         circles.opacities, rects.contrs = 1, 0.5
-    # construct, item, label_low, label_high
+    # Change the positions
     txt_dic['def0'].pos, txt_dic['def1'].pos, txt_dic['def2'].pos = text_pos['bar_high'], text_pos['bar_mid'], text_pos['bar_low']
     if expInfo['disp cond']:
         txt_dic['def3'].pos = text_pos['middle_high']
+    # Text values and other cosmetics
     txt_dic['def0'].text, txt_dic['def1'].text, txt_dic['def2'].text = '100%', '50%', '0%'
     txt_dic['def0'].opacity, txt_dic['def1'].opacity, txt_dic['def2'].opacity = 0.75, 0.75, 0.75
     txt_dic['def3'].text = 'diff: ' + str(dif) + ' out: ' + str(out)
     circles.xys = xys_points
 
 
-def extract_data_for_fb(blockNum):
-    nTrials = xlsx_dic['blocks'].nTrial[blockNum]
-    dif = xlsx_dic['blocks'].dif[blockNum]
-    out = xlsx_dic['blocks'].outlier[blockNum]
-    txt = xlsx_dic['blocks'].intro_text_content[blockNum]
-    nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
-    return dif, out, nTrials, nSelfs, txt
+# Load fb background (vertical stripes)
+gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
+                         'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  #
+
+# Will be used to present the fb
 
 
 def feedback(xys_points, blockNum, block_n, isTraining):
@@ -749,19 +776,7 @@ def feedback(xys_points, blockNum, block_n, isTraining):
                 thisExp.addData('fb_end_trig', 't-'+event_name)
             break
 
-
-def insert_text(txt):
-    txt_dic['def0'].pos = text_pos['slf_txt']
-    txt_dic['def0'].text = txt
-    box_text.text = 'Sisesta tekst siia...'
-    buttons = mouse.getPressed()
-    while not buttons[2]:
-        brush.reset()
-        buttons = mouse.getPressed()
-        txt_dic['def0'].draw()
-        box_text.draw()
-        win.flip()
-    thisExp.addData('odd', box_text.text)
+# ELEMENTS DIRECTLY RELATED TO THE MAIN LOOP
 
 
 def extract_data_for_main(trialNumber):
@@ -788,7 +803,34 @@ def self_report_wrapper(nSelfs, trialNumber):
             thisExp.nextEntry()
 
 
-trialNumber = 0
+# Prepare text box
+box_text = visual.TextBox2(
+    win, text='Sisesta tekst siia...', font='Open Sans',
+    pos=(0, 0),     letterHeight=0.05, size=(None, None), borderWidth=2.0,
+    color='white', colorSpace='rgb', opacity=None, bold=False, italic=False,
+    lineSpacing=1.0, padding=0.0, anchor='center', fillColor=None, borderColor=None,
+    flipHoriz=False, flipVert=False, editable=True, name='text2', autoLog=False,
+)
+
+
+def insert_text(txt):
+    txt_dic['def0'].pos = text_pos['slf_txt']
+    txt_dic['def0'].text = txt
+    box_text.text = 'Sisesta tekst siia...'
+    buttons = mouse.getPressed()
+    while not buttons[2]:
+        brush.reset()
+        buttons = mouse.getPressed()
+        txt_dic['def0'].draw()
+        box_text.draw()
+        win.flip()
+    thisExp.addData('odd', box_text.text)
+
+
+# THIS IS WHERE THE ESPERIMENT STARTS
+
+# Inisialize some variables
+trialNumber = 0  # will keep track on how many blocks
 nTrials = len(xlsx_dic['blocks'])
 theseKeys = event.getKeys(keyList=expInfo['escape key'])
 
