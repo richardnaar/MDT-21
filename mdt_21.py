@@ -88,12 +88,6 @@ else:
 if not expInfo['tracker'] == 'none':
     # Eye tracker to use ('mouse', 'eyelink', 'gazepoint', or 'tobii')
     results = val.calibrate(win, expInfo['tracker'])
-#    calib_name = expInfo['participant'] + '-calibration' + date + '.txt'
-#    with open(dataDir+calib_name, 'a') as file_object:
-#        file_object.write('participant' + ';' + 'passed' + ';' + 'units' +
-#                          ';' + 'min_error' + ';' + 'max_error' + ';' + 'mean_error' + '\n')
-#        file_object.write(str(results['passed']) + ';' + str(results['positions_failed_processing']) + ';' +
-#                          str(results['reporting_unit_type']) + ';' + str(results['min_error']) + ';' + str(results['max_error']) + ';' + str(results['mean_error']))
 
     thisExp.addData('eye_passed', results['passed'])
     thisExp.addData('failed_pos_count',
@@ -555,8 +549,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
             t = drawClock.getTime()
 
             while t - duration < 0:
-                # wait for mouse release
-                buttons = mouse.getPressed()
+                buttons = mouse.getPressed()  # wait for mouse release
                 t = drawClock.getTime()
                 tThisFlip = win.getFutureFlipTime(clock=drawClock)
                 tThisFlipGlobal = win.getFutureFlipTime(clock=None)
@@ -638,7 +631,6 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                     trigger2BSend = False
 
                 check_quit()
-        # and trialRepeatCount < 2: and trialNumberInDraw <= nTrials
 
         line_len_tol = 1-float(expInfo['length tolerance percent'])/100
         if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < length*line_len_tol or dur > 8):
