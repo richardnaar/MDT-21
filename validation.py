@@ -3,6 +3,13 @@
 """
 Calibrate, validate, run with GC cursor demo / test.
 Select which tracker to use by setting the TRACKER variable below.
+
+* This is a sligthly modified version of the demo provided by PsychoPy    
+
+Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
+        PsychoPy2: Experiments in behavior made easy Behav Res 51: 195. 
+        https://doi.org/10.3758/s13428-018-01193-y
+ 
 """
 
 from __future__ import absolute_import, division, print_function
@@ -262,8 +269,10 @@ def calibrate(win):
             # Check any new keyboard char events for a space key.
             # If one is found, set the trial end variable.
             #
-            if keyboard.getPresses(keys=' '):
+            if keyboard.getPresses(keys='space'):
                 run_trial = False
+            if keyboard.getPresses(keys='v'):
+                calibrate(win)
             elif core.getTime()-tstart_time > T_MAX:
                 run_trial = False
         win.flip()
@@ -279,6 +288,7 @@ def calibrate(win):
 
 # io.quit()
 # core.quit()
+
 
 if __name__ == '__main__':
     calibrate()  # Put the a call to the main function in the file.
