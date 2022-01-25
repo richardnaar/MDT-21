@@ -33,7 +33,7 @@ os.chdir(_thisDir)  # set as a current dir
 psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
 expInfo = {'participant': 'test', 'error tolerance': 20, 'length tolerance percent': 40,
-           'fb mode': ['type A', 'type B'],  'triggers': '1', 'escape key': 'escape', 'disp cond': '0',
+           'fb mode': ['type A', 'type B'],  'triggers': '1', 'escape key': 'escape', 'disp cond': 0,
            'dif baseline min': -0.1, 'easy baselline min': 0.05, 'point uncertinty': 0.085, 'outlier distance': 0.1,
            'easy lines n': 4, 'diff lines n': 6, 'line length min': 0.15, 'line length max': 0.25, 'tracker': list(['tobii', 'mouse', 'none'])}
 
