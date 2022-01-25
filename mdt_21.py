@@ -68,8 +68,11 @@ with open(dataDir+filename2, 'a') as file_object:
 
 
 # SETUP THE WINDOW AND CLOCKS
+# Will set size equal to full screen but full screen False for now
+# Otherwise will resize the window in the calibration
+# After calibration the fullscr will be set to True
 win = visual.Window(
-    size=[1920, 1080], fullscr=True, screen=0,
+    size=[1920, 1080], fullscr=False, screen=0,
     winType='pyglet', allowGUI=False, allowStencil=False,
     monitor='testMonitor', color=[0, 0, 0], colorSpace='rgb',
     blendMode='avg', useFBO=True,
@@ -134,6 +137,9 @@ if not expInfo['tracker'] == 'none':
         # Start getting gaze data
         my_eyetracker.subscribe_to(
             tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
+
+# Set win to fullscreen
+win.fullscr = True
 
 # Will be used to save the eye data
 
