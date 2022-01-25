@@ -1,5 +1,8 @@
 # MDT 2021
 
+# IMPORT MODULES
+# Additional modules will be loaded further into the script in relation
+# to the eye-tracking and sound presentation
 
 from __future__ import absolute_import, division
 import math
@@ -20,6 +23,7 @@ import cart_dist as cd  # this is used to find mouse distance from the closest l
 import validation as val  # used for calibration and validation
 psychopy.useVersion('latest')
 
+# DEFINE VARIABLES AND PREPARE DATA HANDLERS
 
 # Ensure that relative paths start from the same directory as this script
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -63,7 +67,7 @@ with open(dataDir+filename2, 'a') as file_object:
                       'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + '\n')
 
 
-# Setup the Window
+# SETUP THE WINDOW AND CLOCKS
 win = visual.Window(
     size=[1920, 1080], fullscr=True, screen=0,
     winType='pyglet', allowGUI=False, allowStencil=False,
@@ -102,7 +106,6 @@ if not expInfo['tracker'] == 'none':
 
     if expInfo['tracker'] == 'tobii':
         # Import needed modules
-        global tr
         import tobii_research as tr
 
         import time
@@ -111,7 +114,6 @@ if not expInfo['tracker'] == 'none':
         # Find eye trackers
         found_eyetrackers = tr.find_all_eyetrackers()
         # Select first eye tracker
-        global my_eyetracker
         my_eyetracker = found_eyetrackers[0]
 
         gaze_list = []
@@ -164,7 +166,7 @@ def save_timeStamps(event_name):
                         globalClock.getTime())
 
 
-# Prepare texts
+# PREPARE TEXTS
 txt_dic = {}
 for txtStim in range(4):
     txt_dic['def'+str(txtStim)] = visual.TextStim(win=win, name='text'+str(txtStim),
@@ -173,18 +175,50 @@ for txtStim in range(4):
                                                   color='white', colorSpace='rgb', opacity=.75,
                                                   languageStyle='LTR', depth=-1.0)
 
+# Additional text to blocks table
+end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
+odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Jätkamiseks vajuta paremat hiireklahvi...)'
+
+excel_sheets = {'blocks': 'blocks', 'self_report': 'self_report'}
+reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.'
+
+# Used to draw text in the draw and main loops
+
+
+def draw_text(text2draw, textElement, click_next, isTraining):
+    mouse = event.Mouse(win=win)
+    buttons = [0, 0, 0]
+    textElement.text = text2draw
+    textElement.pos = (0, 0)
+    frameCount = 0
+    win.flip()
+    brush.reset()
+
+    theseKeysBreak = event.getKeys('space')
+    break_out = False
+    while not break_out:
+        theseKeysBreak = event.getKeys('space')
+        if isTraining and len(theseKeysBreak):
+            break_out = True
+        elif not isTraining and hovering(click_next, mouse) and sum(buttons):
+            break_out = True
+        mouse = event.Mouse(win=win)
+        if frameCount > 3:
+            click_next.draw()
+            textElement.draw()
+        win.flip()
+        buttons = mouse.getPressed()
+        theseKeys = event.getKeys(keyList=expInfo['escape key'])
+        frameCount += 1
+        if len(theseKeys):
+            core.quit()
+
+
 # Dictionary of text positions
 text_pos = {'intro': (0.7, -0.35), 'distance': (-0.5, 0.42), 'timer': (-0.5, 0.38),
             'middle': (0, 0), 'middle_high':  (0, 0.42), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_mid': (-0.6, 0), 'bar_low': (-0.6, -0.3),
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
-# Prepare brush
-brush = visual.Brush(win=win, name='brush',
-                     lineWidth=1.5,
-                     lineColor=[1, 1, 1],
-                     lineColorSpace='rgb',
-                     opacity=None,
-                     buttonRequired=True)
 
 # TRIGGERS
 
@@ -225,51 +259,13 @@ for i in col_list:
     for j, k in enumerate(col_dict[i]):
         col_dict[i][j] = round((k/255)*2 - 1, 2)
 
-# Used to draw text in the draw and main loops
 
-
-def draw_text(text2draw, textElement, click_next, isTraining):
-    mouse = event.Mouse(win=win)
-    buttons = [0, 0, 0]
-    textElement.text = text2draw
-    textElement.pos = (0, 0)
-    frameCount = 0
-    win.flip()
-    brush.reset()
-
-    theseKeysBreak = event.getKeys('space')
-    break_out = False
-    while not break_out:
-        theseKeysBreak = event.getKeys('space')
-        if isTraining and len(theseKeysBreak):
-            break_out = True
-        elif not isTraining and hovering(click_next, mouse) and sum(buttons):
-            break_out = True
-        mouse = event.Mouse(win=win)
-        if frameCount > 3:
-            click_next.draw()
-            textElement.draw()
-        win.flip()
-        buttons = mouse.getPressed()
-        theseKeys = event.getKeys(keyList=expInfo['escape key'])
-        frameCount += 1
-        if len(theseKeys):
-            core.quit()
-
-
-# Additional text to blocks table
-end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
-odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Jätkamiseks vajuta paremat hiireklahvi...)'
-
-excel_sheets = {'blocks': 'blocks', 'self_report': 'self_report'}
-reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.'
+# RANDOMIZATION HAPPENS HERE
 
 xlsx_dic = {}
 for n, name in enumerate(excel_sheets):
     xls_file = pd.ExcelFile(excel_sheets[name] + '.xlsx')
     xlsx_dic["{0}".format(name)] = xls_file.parse()
-
-# RANDOMIZATION HAPPENS HERE
 
 rando_idx = [0]*len(xlsx_dic['blocks'])
 for i in range(len(xlsx_dic['blocks'])):
@@ -295,6 +291,16 @@ def check_quit():
 
 
 # ELEMENTS RELATED TO THE DRAW ROUTINE
+
+# Prepare brush
+brush = visual.Brush(win=win, name='brush',
+                     lineWidth=1.5,
+                     lineColor=[1, 1, 1],
+                     lineColorSpace='rgb',
+                     opacity=None,
+                     buttonRequired=True)
+
+
 # Prepare lines
 line_list = list([expInfo['easy lines n'], expInfo['diff lines n']])
 max_lines = line_list[1]
@@ -304,9 +310,6 @@ for i in range(max_lines):
                        lineColor=[0, 0, 0], lineWidth=6)
     line.status = NOT_STARTED
     lines.append(line)
-
-
-# ELEMENTS RELATED TO THE DRAW ROUTINE
 
 
 def prep_lines(n, dif, lines):
@@ -640,17 +643,20 @@ def hovering(obj, mouse):
         return gotValidClick
 
 
+# The background horizontal lines in fb routine
 pic_dir = _thisDir + '\\images'  # folder with the images
 gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
                          'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  # , contrast=0.75 size 1.1, 0.67
 
 
+# Positions
 gauss.pos, n_bars, ecc, ys = (-0.01, 0), 4, [0.1, 0.3], [0]*4  # -0.1
 ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
 ys[3] = float(np.random.uniform(low=-0.25, high=0, size=1))
 ys = [round(i, 2) for i in ys]
 random.shuffle(ys)
 field_pos = (0, 0)
+
 if n_bars == 4:
     # List of box positions
     xys_circles = [[ecc[1]*-1, ys[0]], [ecc[0]*-1, ys[1]],
