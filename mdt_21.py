@@ -206,7 +206,8 @@ def draw_text(text2draw, textElement, click_next, isTraining):
             break_out = True
         mouse = event.Mouse(win=win)
         if frameCount > 3:
-            click_next.draw()
+            if not isTraining:
+                click_next.draw()
             textElement.draw()
         win.flip()
         buttons = mouse.getPressed()
