@@ -138,9 +138,6 @@ if not expInfo['tracker'] == 'none':
         my_eyetracker.subscribe_to(
             tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary=True)
 
-# Set win to fullscreen
-win.fullscr = True
-
 # Will be used to save the eye data
 
 
@@ -185,7 +182,6 @@ for txtStim in range(4):
 end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
 odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Jätkamiseks vajuta paremat hiireklahvi...)'
 
-excel_sheets = {'blocks': 'blocks', 'self_report': 'self_report'}
 reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.'
 
 # Used to draw text in the draw and main loops
@@ -267,6 +263,8 @@ for i in col_list:
 
 
 # RANDOMIZATION HAPPENS HERE
+
+excel_sheets = {'blocks': 'blocks', 'self_report': 'self_report'}
 
 xlsx_dic = {}
 for n, name in enumerate(excel_sheets):
@@ -839,7 +837,9 @@ def insert_text(txt):
     thisExp.addData('odd', box_text.text)
 
 
-# THIS IS WHERE THE ESPERIMENT STARTS
+# THIS IS WHERE THE EXPERIMENT STARTS
+# Set win to fullscreen
+win.fullscr = True
 
 # Inisialize some variables
 trialNumber = 0  # will keep track on how many blocks
