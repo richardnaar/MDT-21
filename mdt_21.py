@@ -196,6 +196,9 @@ def draw_text(text2draw, textElement, click_next, isTraining):
     win.flip()
     brush.reset()
 
+    if isTraining:
+        click_next.setAutoDraw(False)
+
     theseKeysBreak = event.getKeys('space')
     break_out = False
     while not break_out:
