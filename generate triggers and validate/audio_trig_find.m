@@ -18,9 +18,9 @@ fs = newData1.fs;
 %% Double check trigger files
 
 fdat = abs(fft(data)).^2;
-hz = 0:1/0.5:fs/2;
-plot(hz(2:end), fdat(2:length(hz)) )
-
+% hz = 0:1/0.5:fs/2;
+% plot(hz(2:end), fdat(2:length(hz)) )
+plot(fdat)
 %% Find events in waveforms recorded during the experiment
 
 %% Import 2
@@ -54,11 +54,13 @@ hold on
 plot(event, 'r')
 %% plot event markers and waveforms on the same plot
 hz = 0:1:fs/2;
-for ii = 1:length(eindx)
-    data1 = data(eindx(ii):eindx(ii)+fs);
 
+for ii = 1:length(eindx)
+    data1 = data(eindx(ii):eindx(ii)+fs/20);
+%     plot(data1)
     fdat = abs(fft(data1)).^2;
-    plot(fdat(2:length(hz)) )
+%     plot(fdat(2:length(hz)) )
+    plot(fdat)
     pause()
 end
 

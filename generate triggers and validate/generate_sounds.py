@@ -15,7 +15,7 @@ if not os.path.exists(snd_dir):
 frex = [110, 330, 554, 784, 1046]  # frequencies
 # sound parameters
 rate = 44100    # samples per second
-T = 0.5     # sample duration (seconds)
+T = 0.1     # sample duration (seconds)
 t = np.linspace(0, T, round(T*rate), endpoint=False)  # time
 
 
