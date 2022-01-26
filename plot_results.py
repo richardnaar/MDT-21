@@ -7,24 +7,34 @@ import numpy as np
 from psychopy import core, gui
 import scipy.stats
 
-participant = 'test1'
-all_participants = 1
-
-
 # get the current directory
 dirpath = os.getcwd()
 data_dir = dirpath+'\\data'
 
 data_names = list(filter(lambda x: x.endswith('.csv'), os.listdir(data_dir)))
 
+# data_names.remove('_et')
+
 # find the latest csv
 data_files = glob.glob(data_dir+'\\*.csv')
+
+
+def clean_list(list_name, str2find):
+    for item in list_name:
+        if str2find in item:
+            list_name.remove(item)
+    return list_name
+
+
+data_files = clean_list(data_files, '_et')
+data_names = clean_list(data_names, '_et')
+
+
 latest_csv = max(data_files, key=os.path.getctime)
 
 for name in data_names:
     if name in latest_csv:
         latest_name = name
-        break
 
 # let user to pick a file
 
@@ -56,12 +66,13 @@ if expInfo['one participant']:
 def load_data(data_files):
     data = pd.DataFrame()
     for file in data_files:
-        print(file)
-        csv_file = pd.read_csv(file)
-        csv_file = csv_file[csv_file.brush_max_dev.isna() == False]
-        csv_file = csv_file[csv_file.training == False]
-        data = data.append(csv_file)
-        pic_name = 'all_participants'
+        if '_et' not in file:
+            print(file)
+            csv_file = pd.read_csv(file)
+            csv_file = csv_file[csv_file.brush_max_dev.isna() == False]
+            csv_file = csv_file[csv_file.training == False]
+            data = data.append(csv_file)
+            pic_name = 'all_participants'
     return data, pic_name
 
 
