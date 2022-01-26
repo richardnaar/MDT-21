@@ -864,6 +864,8 @@ while runExperiment and (len(theseKeys) < 1):
     elif trialNumber < nTrials:
         isTraining, nSelfs, intro_text = extract_data_for_main(trialNumber)
 
+        # Filip before next trial
+        win.flip()
         draw_text(intro_text, txt_dic['def0'],
                   click_next, isTraining)
         # Run draw routine
@@ -875,9 +877,6 @@ while runExperiment and (len(theseKeys) < 1):
         brush.status = NOT_STARTED
         # Run assessment routine
         self_report_wrapper(nSelfs, trialNumber)
-
-    # Filip before next trial
-    win.flip()
 
     trialNumber += 1
     theseKeys = event.getKeys(keyList=expInfo['escape key'])

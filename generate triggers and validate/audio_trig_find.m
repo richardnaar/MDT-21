@@ -49,7 +49,11 @@ end
 
 eindx = find(event);
 
+plot(data)
+hold on
+plot(event, 'r')
 %% plot event markers and waveforms on the same plot
+hz = 0:1:fs/2;
 for ii = 1:length(eindx)
     data1 = data(eindx(ii):eindx(ii)+fs);
 
