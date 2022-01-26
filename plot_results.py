@@ -20,8 +20,9 @@ def load_data(data_dir, data_files):
     data = pd.DataFrame()
     for file in data_files:
         csv_file = pd.read_csv(data_dir+'\\'+file)
-        csv_file[csv_file.brush_max_dev.isna() == False]
+        csv_file = csv_file[csv_file.brush_max_dev.isna() == False]
         data = pd.concat([data, csv_file], axis=1)
+    return data
 
 
-load_data(data_dir, data_files)
+data = load_data(data_dir, data_files)
