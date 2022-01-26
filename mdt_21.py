@@ -355,7 +355,7 @@ def prep_lines(n, dif, lines):
 # Will save the trial data
 
 
-def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier, start, end, x, y, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs):
+def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier, start, end, x, y, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs):
 
     thisExp.addData('local_trial_n', trialNumberInDraw)
     thisExp.addData('trial_repaet', trialRepeat)
@@ -363,7 +363,7 @@ def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier,
     thisExp.addData('difficulty', dif)
     thisExp.addData('line_col', col_list[dif])  # list(lines[1].color)
     thisExp.addData('outlier', outlier)
-    thisExp.addData('brush_satrt_time', brush_satrt_time)
+    thisExp.addData('brush_start_time', brush_start_time)
     thisExp.addData('brush_draw_dur', brush_draw_dur)
     thisExp.addData('training', isTraining)
     thisExp.addData('cond_table_id', trialId)
@@ -516,7 +516,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                     save_timeStamps('brush_offset_')
                     brush_offset_t = drawClock.getTime()
                     brush_draw_dur = brush_offset_t-draw_start
-                    brush_satrt_time = draw_start-line_fliped_on_screen_t
+                    brush_start_time = draw_start-line_fliped_on_screen_t
                     break
 
                 if not wait:
@@ -554,13 +554,13 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
             txt_dic['def0'].pos = text_pos['distance']
             trialRepeat = True
             draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat,
-                           dif, outlier, start, end, mouse.x, mouse.y, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs)
+                           dif, outlier, start, end, mouse.x, mouse.y, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs)
 
         else:
             if trialNumberInDraw < nTrials:
                 trialRepeat = False
                 draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat,
-                               dif, outlier, start, end, mouse.x, mouse.y, dist, brush_draw_dur, brush_satrt_time, isTraining, trialId, nSelfs)
+                               dif, outlier, start, end, mouse.x, mouse.y, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs)
             trialNumberInDraw += 1
 
     y_circles = find_points(dif, outlier)
