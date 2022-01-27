@@ -64,7 +64,7 @@ filename2 = expInfo['participant'] + '-positions' + expInfo['date'] + '.txt'
 # Prepare mouse position data file
 with open(dataDir+filename2, 'a') as file_object:
     file_object.write('participant' + ';' + 'cond_table_id' + ';' + 'training' + ';' + 'trial_repaet' + ';' + 'difficulty' + ';' + 'outlier' + ';' 'block_n' + ';'
-                      'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + '' + ';' + '\n')
+                      'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + ';' + 'lengths' + '\n')
 
 
 # SETUP THE WINDOW AND CLOCKS
@@ -351,12 +351,12 @@ def prep_lines(n, dif, lines):
         lines[i].start, lines[i].end = start[i], end[i]
         lines[i].lineColor, lines[i].status = color, NOT_STARTED
 
-    return lines, angle, start, end, sum(length)
+    return lines, angle, start, end, length
 
 # Will save the trial data
 
 
-def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier, start, end, x, y, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs):
+def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier, start, end, x, y, length, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs):
 
     thisExp.addData('local_trial_n', trialNumberInDraw)
     thisExp.addData('trial_repaet', trialRepeat)
@@ -377,7 +377,7 @@ def draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat, dif, outlier,
 
     with open(dataDir+filename2, 'a') as file_object:
         file_object.write(expInfo['participant'] + ';' + str(trialId) + ';' + str(isTraining) + ';' + str(trialRepeat) + ';' + str(dif) + ';' + str(outlier) + ';' +
-                          str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(x) + ';' + str(y) + '\n')
+                          str(block) + ';' + str(trialNumberInDraw) + ';' + str(start) + ';' + str(end) + ';' + str(x) + ';' + str(y) + ';' + str(length) + '\n')
 
 # Extract trial data for draw routine
 
@@ -548,20 +548,20 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 check_quit()
 
         line_len_tol = 1-float(expInfo['length tolerance percent'])/100
-        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < length*line_len_tol or dur > 8):
+        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < sum(length)*line_len_tol or dur > 8):
             brush.reset()
             draw_text('Saad uue katse!',
                       txt_dic['def0'], click_next, isTraining)
             txt_dic['def0'].pos = text_pos['distance']
             trialRepeat = True
             draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat,
-                           dif, outlier, start, end, mouse.x, mouse.y, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs)
+                           dif, outlier, start, end, mouse.x, mouse.y, length, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs)
 
         else:
             if trialNumberInDraw < nTrials:
                 trialRepeat = False
                 draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat,
-                               dif, outlier, start, end, mouse.x, mouse.y, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs)
+                               dif, outlier, start, end, mouse.x, mouse.y, length, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs)
             trialNumberInDraw += 1
 
     y_circles = find_points(dif, outlier)
