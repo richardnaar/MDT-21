@@ -34,7 +34,7 @@ psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
 expInfo = {'participant': 'test', 'error tolerance': 20, 'length tolerance percent': 40,
            'fb mode': ['type A', 'type B'],  'triggers': '1', 'escape key': 'escape', 'disp cond': 0,
-           'dif baseline min': -0.1, 'easy baselline min': 0.05, 'point uncertinty': 0.085, 'outlier distance': 0.1,
+           'dif baseline min': -0.1, 'easy baseline min': 0.05, 'point uncertinty': 0.085, 'outlier distance': 0.1,
            'easy lines n': 4, 'diff lines n': 6, 'line length min': 0.15, 'line length max': 0.25, 'tracker': list(['tobii', 'mouse', 'none'])}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -64,7 +64,7 @@ filename2 = expInfo['participant'] + '-positions' + expInfo['date'] + '.txt'
 # Prepare mouse position data file
 with open(dataDir+filename2, 'a') as file_object:
     file_object.write('participant' + ';' + 'cond_table_id' + ';' + 'training' + ';' + 'trial_repaet' + ';' + 'difficulty' + ';' + 'outlier' + ';' 'block_n' + ';'
-                      'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + '\n')
+                      'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + '' + ';' + '\n')
 
 
 # SETUP THE WINDOW AND CLOCKS
@@ -219,7 +219,7 @@ def draw_text(text2draw, textElement, click_next, isTraining):
 
 # Dictionary of text positions
 text_pos = {'intro': (0.7, -0.35), 'distance': (-0.5, 0.42), 'timer': (-0.5, 0.38),
-            'middle': (0, 0), 'middle_high':  (0, 0.42), 'bar': (0.06, 0.6), 'bar_high': (-0.6, 0.3), 'bar_mid': (-0.6, 0), 'bar_low': (-0.6, -0.3),
+            'middle': (0, 0), 'middle_high':  (0, 0.42), 'bar_high': (-0.65, 0.35), 'bar_mid': (-0.65, 0), 'bar_low': (-0.65, -0.35),
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
 
@@ -273,8 +273,8 @@ for n, name in enumerate(excel_sheets):
     xlsx_dic["{0}".format(name)] = xls_file.parse()
 
 rando_idx = [0]*len(xlsx_dic['blocks'])
-for i in range(len(xlsx_dic['blocks'])):
-    if 'Kognitiivse efektiivsuse mõõtmise plokk:' in xlsx_dic['blocks'].intro_text_content[i]:
+for i in range(len(xlsx_dic['blocks'])-1):  # Not including last (self report)
+    if not xlsx_dic['blocks'].training[i]:
         rando_idx[i] = 1
 
 start_idx = rando_idx.index(1)
@@ -575,7 +575,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 xys_circles[yi][1] = round(-7*(points[yi]-0.035), 2)
     return xys_circles, block
 
-# FB RELATED ELEMENTS
+# FEEDBACK RELATED ELEMENTS
 
 # Will be used to calculate random points from a uniform distribution
 
@@ -588,8 +588,8 @@ def find_points(dif, outlier):
     b1_1 = expInfo['dif baseline min']
     b1_2 = expInfo['dif baseline min'] + unc
 
-    b2_1 = expInfo['easy baselline min']
-    b2_2 = expInfo['easy baselline min'] + unc
+    b2_1 = expInfo['easy baseline min']
+    b2_2 = expInfo['easy baseline min'] + unc
 
     b1_2_out_low = b1_1 - outlier_dist  # difficult low max
     b1_1_out_low = b1_2_out_low - unc  # difficult low min
@@ -651,11 +651,11 @@ def hovering(obj, mouse):
 # The background horizontal lines in fb routine
 pic_dir = _thisDir + '\\images'  # folder with the images
 gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                         'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  # , contrast=0.75 size 1.1, 0.67
+                         'gauss7.png', units='height', size=(1.1, 0.77), name='gauss', contrast=0.2)  # , contrast=0.75 size 1, 0.67
 
 
 # Positions
-gauss.pos, n_bars, ecc, ys = (-0.01, 0), 4, [0.1, 0.3], [0]*4  # -0.1
+gauss.pos, n_bars, ecc, ys = (-0.01, 0), 4, [0.15, 0.45], [0]*4  # -0.1
 ys[0:3] = np.random.uniform(low=0, high=0.25, size=3)
 ys[3] = float(np.random.uniform(low=-0.25, high=0, size=1))
 ys = [round(i, 2) for i in ys]
@@ -680,38 +680,41 @@ circles = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSi
                                   elementMask='gauss', texRes=48, interpolate=True,
                                   autoLog=None, maskParams=None)
 
-# White vertical lines in a gaussian envelope
-rects = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize=(1, 1),
-                                fieldShape='square', nElements=n_bars, sizes=text_pos['bar'], xys=xys_rects,
+# White vertical lines
+rects = visual.ElementArrayStim(win, name='rects', fieldPos=(0, -0.35), fieldSize=(1, 1),  # field_pos
+                                # (0.06, 0.6)
+                                # (0.02, 0.6)
+                                fieldShape='square', nElements=n_bars, sizes=(0.01, 0.02), xys=xys_rects,
                                 colors=([1.0, 1.0, 1.0]), colorSpace='rgb', opacities=1, oris=0,
                                 sfs=0, contrs=1, phases=0, elementTex='sqr',
-                                elementMask='gauss', texRes=48, interpolate=True,
+                                elementMask='none', texRes=48, interpolate=True,
                                 autoLog=None, maskParams=None)
 
 # Arrows shown in the training fb
 arrow1 = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                          'arrow1.png', units='height', size=(0.358, 0.15), pos=(-0.15, 0.35), name='arrow1', contrast=0.75)
+                          'arrow1.png', units='height', size=(0.358, 0.15), pos=(-0.28, 0.4), name='arrow1', contrast=0.75)
 
 arrow2 = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                          'arrow2.png', units='height', size=(0.392, 0.165), pos=(0.14, -0.35), name='arrow1', contrast=0.75)
+                          'arrow2.png', units='height', size=(0.392, 0.165), pos=(0.28, -0.425), name='arrow2', contrast=0.75)
 
 # Extract trial data for fb
 
 
 def extract_data_for_fb(blockNum):
     nTrials = xlsx_dic['blocks'].nTrial[blockNum]
+    fb = xlsx_dic['blocks'].fb[blockNum]
     dif = xlsx_dic['blocks'].dif[blockNum]
     out = xlsx_dic['blocks'].outlier[blockNum]
     txt = xlsx_dic['blocks'].intro_text_content[blockNum]
     nSelfs = xlsx_dic['blocks'].nSelf[blockNum]
-    return dif, out, nTrials, nSelfs, txt
+    return dif, out, nTrials, nSelfs, txt, fb
 
 # Prepares opacities, texts, positions for points and texts for fb
 
 
 def prepare_aesthetics_for_fb(dif, out, xys_points, txt):
     circles.colors = col_dict[col_list[dif]]
-    if 'lõpus näed ka tagasisidet.' in txt:
+    if 'Pärast tagasiside nägemist küsitakse' in txt:
         circles.opacities, rects.contrs = [1, 0, 0, 0], [0.5, 0.2, 0.2, 0.2]
     else:
         circles.opacities, rects.contrs = 1, 0.5
@@ -726,21 +729,19 @@ def prepare_aesthetics_for_fb(dif, out, xys_points, txt):
     circles.xys = xys_points
 
 
-# Load fb background (vertical stripes)
-gauss = visual.ImageStim(win=win, image=pic_dir + '\\' +
-                         'gauss7.png', units='height', size=(1, 0.66), name='gauss', contrast=0.2)  #
-
 # Will be used to present the fb
 
 
 def feedback(xys_points, blockNum, block_n, isTraining):
     timeStamp2BSend, trigger2BSend = True, True
-    dif, out, nTrials, nSelfs, txt = extract_data_for_fb(blockNum)
+    dif, out, nTrials, nSelfs, txt, fb = extract_data_for_fb(blockNum)
     prepare_aesthetics_for_fb(dif, out, xys_points, txt)
+    brush.reset()
 
     mouse = event.Mouse(win=win)
     framesCount, t, fb_satrt = 0, 0, 0
-    while nSelfs * nTrials > 0:
+    while nSelfs * fb > 0:  # * nTrials
+        brush.reset()
         theseKeys = event.getKeys('space')
         # space_lisada isTraining
         if isTraining and len(theseKeys):
@@ -773,7 +774,7 @@ def feedback(xys_points, blockNum, block_n, isTraining):
                 sound_trigger(event_name)
                 trigger2BSend = False
                 thisExp.addData('fb_start_trig', 't-'+event_name)
-            if framesCount > float(expInfo['frameRate'])*3:
+            if framesCount > float(expInfo['frameRate'])*3 and not isTraining:
                 click_next.draw()
             check_quit()
             framesCount += 1
