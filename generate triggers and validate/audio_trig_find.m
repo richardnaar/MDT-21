@@ -49,18 +49,24 @@ end
 
 eindx = find(event);
 
+plot(data(eindx(4):eindx(4)+fs/9))
+
 plot(data)
 hold on
 plot(event, 'r')
 %% plot event markers and waveforms on the same plot
-hz = 0:1:fs/2;
+dur = fs/1;
+hz = 0:fs/dur:fs-1;
+% hz = 0:1/0.5:fs/2;
 
 for ii = 1:length(eindx)
-    data1 = data(eindx(ii):eindx(ii)+fs/20);
+    data1 = data(eindx(ii):eindx(ii)+dur);
 %     plot(data1)
-    fdat = abs(fft(data1)).^2;
-%     plot(fdat(2:length(hz)) )
-    plot(fdat)
+   fdat = abs(fft(data1)).^2;
+
+    plot(hz(2:length(hz)/2), fdat(2:length(hz)/2) )
+%      plot(hz(2:length(hz)/2), fdat(2:length(hz)/2) )
+%     plot(fdat)
     pause()
 end
 
