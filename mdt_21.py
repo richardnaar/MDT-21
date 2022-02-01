@@ -5,6 +5,10 @@
 # to the eye-tracking and sound presentation
 
 from __future__ import absolute_import, division
+import validation as val  # used for calibration and validation
+import cart_dist as cd  # this is used to find mouse distance from the closest line
+from psychopy import sound, gui, visual, core, data, event, clock
+from psychopy.constants import (NOT_STARTED)
 import math
 # from tkinter import E
 
@@ -15,12 +19,15 @@ import os  # handy system and path functions
 import numpy as np  # whole numpy lib is available, prepend 'np.'
 import pandas as pd  # whole pandas lib is available, prepend 'pd.'
 import random
-
-from psychopy.constants import (NOT_STARTED)
-from psychopy import gui, visual, core, data, event, clock
 import psychopy
-import cart_dist as cd  # this is used to find mouse distance from the closest line
-import validation as val  # used for calibration and validation
+
+from psychopy import locale_setup
+from psychopy import prefs
+
+prefs.hardware['audioLib'] = 'ptb'
+prefs.hardware['audioLatencyMode'] = '3'
+
+
 psychopy.useVersion('latest')
 
 # DEFINE VARIABLES AND PREPARE DATA HANDLERS
@@ -242,12 +249,14 @@ if expInfo['triggers'] == '1':
         for p in position:
             for d in difficulty:
                 for o in outlier_str:
-                    snd_dic[s+p+d+o] = mixer.Sound(snd_dir+s+p+d+o+'.wav')
+                    snd_dic[s+p+d+o] = sound.Sound(
+                        snd_dir+s+p+d+o+'.wav', secs=-1, stereo=False, hamming=True, name=s+p+d+o)
+                    snd_dic[s+p+d+o].setVolume(1.0)
 
 
 def sound_trigger(event_name):
     if expInfo['triggers'] == '1':
-        snd_dic[event_name].set_volume(1)
+        # snd_dic[event_name].set_volume(1)
         snd_dic[event_name].play()
 
 
