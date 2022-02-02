@@ -1,6 +1,6 @@
 # MDT 2021
 
-# IMPORT MODULES
+# %% IMPORT MODULES
 # Additional modules will be loaded further into the script in relation
 # to the eye-tracking and sound presentation
 
@@ -30,7 +30,7 @@ prefs.hardware['audioLatencyMode'] = '3'
 
 psychopy.useVersion('latest')
 
-# DEFINE VARIABLES AND PREPARE DATA HANDLERS
+# %% DEFINE VARIABLES AND PREPARE DATA HANDLERS
 
 # Ensure that relative paths start from the same directory as this script
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -74,7 +74,7 @@ with open(dataDir+filename2, 'a') as file_object:
                       'local_trial_n' + ';' + 'start_xy' + ';' + 'end_xy' + ';' + 'mouse_x' + ';' + 'mouse_y' + ';' + 'lengths' + '\n')
 
 
-# SETUP THE WINDOW AND CLOCKS
+# %% SETUP THE WINDOW AND CLOCKS
 # Will set size equal to full screen but full screen False for now
 # Otherwise will resize the window in the calibration
 # After calibration the fullscr will be set to True
@@ -99,7 +99,7 @@ else:
 drawClock = core.Clock()
 globalClock = core.Clock()
 
-# PRAPARE EYE-TRACKING
+# %% PRAPARE EYE-TRACKING
 
 # Calibration routine and start recording
 if not expInfo['tracker'] == 'none':
@@ -230,7 +230,7 @@ text_pos = {'intro': (0.7, -0.35), 'distance': (-0.5, 0.42), 'timer': (-0.5, 0.3
             'slf_txt': (0, 0.2), 'slf_low': (-0.45, -0.25), 'slf_high': (0.45, -0.25)}
 
 
-# TRIGGERS
+# %% TRIGGERS
 
 if expInfo['triggers'] == '1':
     from pygame import mixer
@@ -260,7 +260,7 @@ def sound_trigger(event_name):
         snd_dic[event_name].play()
 
 
-# COLOURS
+# %% COLOURS
 # Pepare line colours
 col_list = ['red', 'blue']
 random.shuffle(col_list)
@@ -272,7 +272,7 @@ for i in col_list:
         col_dict[i][j] = round((k/255)*2 - 1, 2)
 
 
-# RANDOMIZATION HAPPENS HERE
+# %% RANDOMIZATION HAPPENS HERE
 
 excel_sheets = {'blocks': 'blocks', 'self_report': 'self_report'}
 
@@ -304,7 +304,7 @@ def check_quit():
         core.quit()
 
 
-# ELEMENTS RELATED TO THE DRAW ROUTINE
+# %% ELEMENTS RELATED TO THE DRAW ROUTINE
 
 # Prepare brush
 brush = visual.Brush(win=win, name='brush',
@@ -584,7 +584,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 xys_circles[yi][1] = round(-7*(points[yi]-0.035), 2)
     return xys_circles, block
 
-# FEEDBACK RELATED ELEMENTS
+# %% FEEDBACK RELATED ELEMENTS
 
 # Will be used to calculate random points from a uniform distribution
 
@@ -797,7 +797,7 @@ def feedback(xys_points, blockNum, block_n, isTraining):
                 thisExp.addData('fb_end_trig', 't-'+event_name)
             break
 
-# ELEMENTS DIRECTLY RELATED TO THE MAIN LOOP
+# %% ELEMENTS DIRECTLY RELATED TO THE MAIN LOOP
 
 
 def extract_data_for_main(trialNumber):
