@@ -96,15 +96,18 @@ cols = ['red', 'blue']
 var = ['brush_max_dev', 'brush_mean_dev', 'brush_draw_dur']
 means = data.pivot_table(index='difficulty', values=var)
 
+data.brush_draw_dev = (data.brush_max_dev-data.brush_max_dev.mean()) / \
+    data.brush_max_dev.std()
+
+data.brush_draw_dur = (data.brush_draw_dur-data.brush_draw_dur.mean()) / \
+    data.brush_draw_dur.std()
+
+
 for dif in data.difficulty.astype(int).unique():
     data2plot = data[data.difficulty == dif]
 
-    bmd_z = (data2plot.brush_max_dev-data2plot.brush_max_dev.mean()) / \
-        data2plot.brush_max_dev.std()
-    # bmd_z = (data.brush_mean_dev-data.brush_mean_dev.mean())/data.brush_mean_dev.std()
-
-    bdd_z = (data2plot.brush_draw_dur-data2plot.brush_draw_dur.mean()) / \
-        data2plot.brush_draw_dur.std()
+    bmd_z = data2plot.brush_max_dev
+    bdd_z = data2plot.brush_draw_dur
 
     ax[dif].scatter(bmd_z, bdd_z, color=data.line_col.unique()
                     [dif], alpha=0.5)  # label="Trial"
