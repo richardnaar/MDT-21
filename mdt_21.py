@@ -3,9 +3,6 @@
 # %% IMPORT MODULES
 # Additional modules will be loaded further into the script in relation
 # to the eye-tracking and sound presentation
-# Eye tracker ei hakanud kohe tööle (120 vs 60?)
-# Brush jooksutas katse kokku, miks?
-
 
 from __future__ import absolute_import, division
 import validation as val  # used for calibration and validation
@@ -55,7 +52,6 @@ expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 expInfo['psychopyVersion'] = psychopyVersion
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
-
 
 filename = _thisDir + os.sep + \
     u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
