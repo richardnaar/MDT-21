@@ -3,6 +3,9 @@
 # %% IMPORT MODULES
 # Additional modules will be loaded further into the script in relation
 # to the eye-tracking and sound presentation
+# Eye tracker ei hakanud kohe tööle (120 vs 60?)
+# Brush jooksutas katse kokku, miks?
+
 
 from __future__ import absolute_import, division
 import validation as val  # used for calibration and validation
@@ -41,7 +44,7 @@ psychopyVersion = '2021.2.3'
 expName = os.path.basename(__file__)
 expInfo = {'participant': 'test', 'error tolerance': 20, 'length tolerance percent': 40,
            'fb mode': ['type A', 'type B'],  'triggers': '1', 'escape key': 'escape', 'disp cond': 0,
-           'dif baseline min': -0.1, 'easy baseline min': 0.05, 'point uncertinty': 0.085, 'outlier distance': 0.1,
+           'dif baseline min': -0.1, 'easy baseline min': 0.05, 'point uncertinty': 0.1, 'outlier distance': 0.1,
            'easy lines n': 4, 'diff lines n': 6, 'line length min': 0.15, 'line length max': 0.25, 'tracker': list(['tobii', 'mouse', 'none'])}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -256,7 +259,6 @@ if expInfo['triggers'] == '1':
 
 def sound_trigger(event_name):
     if expInfo['triggers'] == '1':
-        # snd_dic[event_name].set_volume(1)
         snd_dic[event_name].play()
 
 
@@ -582,7 +584,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
             else:
                 # actual feedback
                 xys_circles[yi][1] = round(-7*(points[yi]-0.035), 2)
-    return xys_circles, block
+    return xys_circles, y_circles, block
 
 # %% FEEDBACK RELATED ELEMENTS
 
@@ -741,7 +743,7 @@ def prepare_aesthetics_for_fb(dif, out, xys_points, txt):
 # Will be used to present the fb
 
 
-def feedback(xys_points, blockNum, block_n, isTraining):
+def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
     timeStamp2BSend, trigger2BSend = True, True
     dif, out, nTrials, nSelfs, txt, fb = extract_data_for_fb(blockNum)
     prepare_aesthetics_for_fb(dif, out, xys_points, txt)
@@ -756,7 +758,7 @@ def feedback(xys_points, blockNum, block_n, isTraining):
         if isTraining and len(theseKeys):
             save_timeStamps('fb_offset_')
             thisExp.addData('fb_RT', t-fb_satrt)
-            thisExp.addData('xys_points', xys_circles)
+            thisExp.addData('points', y_circles)
             break
         buttons = mouse.getPressed()
         if 'harjutuspl' in txt and framesCount > float(expInfo['frameRate']):
@@ -790,7 +792,7 @@ def feedback(xys_points, blockNum, block_n, isTraining):
         elif not isTraining and sum(buttons) and hovering(click_next, mouse) and framesCount > float(expInfo['frameRate'])*3:
             save_timeStamps('fb_offset_')
             thisExp.addData('fb_RT', t-fb_satrt)
-            thisExp.addData('xys_points', xys_circles)
+            thisExp.addData('points', y_circles)
             if block_n > 0:
                 event_name = '0'+'1' + str(dif) + outlier_str[out]
                 sound_trigger(event_name)
@@ -880,10 +882,11 @@ while runExperiment and (len(theseKeys) < 1):
         draw_text(intro_text, txt_dic['def0'],
                   click_next, isTraining)
         # Run draw routine
-        xys_points, block_n = draw_routine(
+        xys_points, y_circles, block_n = draw_routine(
             rando_idx[trialNumber], lines, trialNumber, isTraining, nSelfs)
         # Give feedback
-        feedback(xys_points, rando_idx[trialNumber], block_n, isTraining)
+        feedback(xys_points, y_circles,
+                 rando_idx[trialNumber], block_n, isTraining)
         brush.reset()
         brush.status = NOT_STARTED
         # Run assessment routine
