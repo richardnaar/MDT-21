@@ -73,7 +73,7 @@ for ii = 1:length(eindx)
 %     plot(fdat)
 %% find triggers
 
-    raw_trig = find(abs(fdat(2:length(hz)/2))>10);
+    raw_trig = find(abs(fdat(2:length(hz)/2))>0.4);
     event = zeros(1, length(raw_trig));
     for f_ind = 1:length(raw_trig)
         idx = dsearchn(trig', raw_trig(f_ind));
@@ -85,28 +85,28 @@ for ii = 1:length(eindx)
     event_i = zeros(1, length(trig));
     for ei = 1:length(event)
         idx = dsearchn(trig', event(ei));
-        event_i(ei) = 1;
+        event_i(idx) = 1;
     end
 
     if event_i(1)
-        fprintf('start\n')
+        fprintf('start +')
     else
-        fprintf('end\n')
+        fprintf('end +')
     end
 
     if event_i(2)
-        fprintf('fb\n')
+        fprintf('fb +')
     else
-        fprintf('brush\n')
+        fprintf('brush +')
     end
 
     if event_i(3)
-        fprintf('dif\n')
+        fprintf('dif +')
     else
-        fprintf('easy\n')
+        fprintf('easy +')
     end
 
-    if sum(event_i(4:5)) == 1
+    if sum(event_i(4:5)) == 2
         fprintf('greater\n')
     elseif event_i(4) == 1
         fprintf('less\n')
