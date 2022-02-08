@@ -73,7 +73,7 @@ for ii = 1:length(eindx)
 %     plot(fdat)
 %% find triggers
 
-    raw_trig = find(abs(fdat(2:length(hz)/2))>0.4);
+    raw_trig = find(abs(fdat(2:length(hz)/2))>0.2);
     event = zeros(1, length(raw_trig));
     for f_ind = 1:length(raw_trig)
         idx = dsearchn(trig', raw_trig(f_ind));
