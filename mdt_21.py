@@ -206,6 +206,7 @@ def draw_text(text2draw, textElement, click_next, isTraining):
     frameCount = 0
     win.flip()
     brush.reset()
+    brush.status = NOT_STARTED
 
     theseKeysBreak = event.getKeys('space')
     break_out = False
@@ -405,10 +406,12 @@ def extract_data_for_draw_routine(blockNum):
 # Initializes some values for lines and the brush in the draw routine
 
 
-def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, n): # tThisFlip, frameTolerance
+# tThisFlip, frameTolerance
+def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, n):
     if n:
         for i in range(n):
-            if elementName[i].status == NOT_STARTED:# and tThisFlip >= 0.0-frameTolerance
+            # and tThisFlip >= 0.0-frameTolerance
+            if elementName[i].status == NOT_STARTED:
                 # keep track of start time/frame for later
                 # elementName[i].frameNStart = frameN  # exact frame index
                 # # local t and not account for scr refresh
@@ -419,7 +422,7 @@ def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, n): # 
                 # win.timeOnFlip(elementName[i], 'tStartRefresh')
                 elementName[i].setAutoDraw(True)
     else:
-        if elementName.status == NOT_STARTED: # and tThisFlip >= 0.0-frameTolerance
+        if elementName.status == NOT_STARTED:  # and tThisFlip >= 0.0-frameTolerance
             # elementName.frameNStart = frameN  # exact frame index
             # elementName.tStart = t  # local t and not account for scr refresh
             # elementName.tStartRefresh = tThisFlipGlobal  # on global time
@@ -467,8 +470,8 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 for i in range(n):
                     lines[i].setAutoDraw(True)
 
-            brush.status = NOT_STARTED
             brush.reset()
+            brush.status = NOT_STARTED
 
             # get current time
             _timeToFirstFrame = win.getFutureFlipTime(clock="now")
@@ -484,12 +487,12 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 # number of completed frames (so 0 is the first frame)
                 frameN = frameN + 1
                 prepare_elements_for_drawing(
-                    lines, frameN, t, tThisFlipGlobal,  n) #tThisFlip, frameTolerance,
+                    lines, frameN, t, tThisFlipGlobal,  n)  # tThisFlip, frameTolerance,
 
                 # *brush* updates
-                if brush.status == NOT_STARTED: # and tThisFlip >= 0.0-frameTolerance:
+                if brush.status == NOT_STARTED:  # and tThisFlip >= 0.0-frameTolerance:
                     prepare_elements_for_drawing(
-                        brush, frameN, t, tThisFlipGlobal,  0) # tThisFlip, frameTolerance, 
+                        brush, frameN, t, tThisFlipGlobal,  0)  # tThisFlip, frameTolerance,
 
                 if buttons[0] > 0 or (t > waitClickFor and wait):  # and frameN > 1
 
@@ -525,6 +528,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                     if len(dist):  # save actual performance
                         points[trialNumberInDraw] = round(np.max(dist), 2)
                     brush.reset()
+                    brush.status = NOT_STARTED
                     win.flip()
                     save_timeStamps('brush_offset_')
                     brush_offset_t = drawClock.getTime()
@@ -565,6 +569,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
         line_len_tol = 1-float(expInfo['length tolerance percent'])/100
         if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < sum(length)*line_len_tol or dur > 8):
             brush.reset()
+            brush.status = NOT_STARTED
             draw_text('Saad uue katse!',
                       txt_dic['def0'], click_next, isTraining)
             txt_dic['def0'].pos = text_pos['distance']
@@ -752,11 +757,13 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
     dif, out, nTrials, nSelfs, txt, fb = extract_data_for_fb(blockNum)
     prepare_aesthetics_for_fb(dif, out, xys_points, txt)
     brush.reset()
+    brush.status = NOT_STARTED
 
     mouse = event.Mouse(win=win)
     framesCount, t, fb_satrt = 0, 0, 0
     while nSelfs * fb > 0:  # * nTrials
         brush.reset()
+        brush.status = NOT_STARTED
         theseKeys = event.getKeys('space')
         # space_lisada isTraining
         if isTraining and len(theseKeys):
@@ -847,6 +854,7 @@ def insert_text(txt):
     buttons = mouse.getPressed()
     while not buttons[2]:
         brush.reset()
+        brush.status = NOT_STARTED
         buttons = mouse.getPressed()
         txt_dic['def0'].draw()
         box_text.draw()
