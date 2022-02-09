@@ -3,6 +3,11 @@
 # %% IMPORT MODULES
 # Additional modules will be loaded further into the script in relation
 # to the eye-tracking and sound presentation
+# laseb edasi, kui ki on palju kordi teinud
+# brush_start_time: kui reaalselt vajutas
+# brush_draw_dur: pärast seda kui reaalselt vajutas
+# meeldetuletus, veendu, et näeksid enda silmi anduri peegelduses
+
 
 from __future__ import absolute_import, division
 import validation as val  # used for calibration and validation
@@ -400,26 +405,26 @@ def extract_data_for_draw_routine(blockNum):
 # Initializes some values for lines and the brush in the draw routine
 
 
-def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, tThisFlip, frameTolerance, n):
+def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, n): # tThisFlip, frameTolerance
     if n:
         for i in range(n):
-            if elementName[i].status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+            if elementName[i].status == NOT_STARTED:# and tThisFlip >= 0.0-frameTolerance
                 # keep track of start time/frame for later
-                elementName[i].frameNStart = frameN  # exact frame index
-                # local t and not account for scr refresh
-                elementName[i].tStart = t
-                # on global time
-                elementName[i].tStartRefresh = tThisFlipGlobal
-                # time at next scr refresh
-                win.timeOnFlip(elementName[i], 'tStartRefresh')
+                # elementName[i].frameNStart = frameN  # exact frame index
+                # # local t and not account for scr refresh
+                # elementName[i].tStart = t
+                # # on global time
+                # elementName[i].tStartRefresh = tThisFlipGlobal
+                # # time at next scr refresh
+                # win.timeOnFlip(elementName[i], 'tStartRefresh')
                 elementName[i].setAutoDraw(True)
     else:
-        if elementName.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
-            elementName.frameNStart = frameN  # exact frame index
-            elementName.tStart = t  # local t and not account for scr refresh
-            elementName.tStartRefresh = tThisFlipGlobal  # on global time
-            # time at next scr refresh
-            win.timeOnFlip(elementName, 'tStartRefresh')
+        if elementName.status == NOT_STARTED: # and tThisFlip >= 0.0-frameTolerance
+            # elementName.frameNStart = frameN  # exact frame index
+            # elementName.tStart = t  # local t and not account for scr refresh
+            # elementName.tStartRefresh = tThisFlipGlobal  # on global time
+            # # time at next scr refresh
+            # win.timeOnFlip(elementName, 'tStartRefresh')
             elementName.setAutoDraw(True)
 
 # This monstrum will be used to run the draw routine
@@ -429,7 +434,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
     nTrials, dif, points, outlier, trialId = extract_data_for_draw_routine(
         blockNum)
     dist_travelled, block = 0, 0
-    frameTolerance = 0.001  # how close to onset before 'same' frame
+    # frameTolerance = 0.001  # how close to onset before 'same' frame
     trialNumberInDraw, trialRepeat = 0, False
 
     txt_dic['def0'].pos = text_pos['distance']
@@ -442,9 +447,9 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
         timeStamp2BSend, trigger2BSend = True, True
         mouse = event.Mouse(win=win)
         # kui jookseb kokku, siis list([0]) *kuigi selle häda on selles, et siis läheb hiiretrajektoori pikkuse arvutamine sassi
-        mouse.x, mouse.y = list(), list()
+        mouse.x, mouse.y = list([0]), list([0])
         # if it is the end of the routine loop
-        if trialNumberInDraw > nTrials:
+        if trialNumberInDraw >= nTrials:
             brush.reset()
             brush.status = NOT_STARTED
             win.flip()
@@ -479,12 +484,12 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 # number of completed frames (so 0 is the first frame)
                 frameN = frameN + 1
                 prepare_elements_for_drawing(
-                    lines, frameN, t, tThisFlipGlobal, tThisFlip, frameTolerance, n)
+                    lines, frameN, t, tThisFlipGlobal,  n) #tThisFlip, frameTolerance,
 
                 # *brush* updates
-                if brush.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+                if brush.status == NOT_STARTED: # and tThisFlip >= 0.0-frameTolerance:
                     prepare_elements_for_drawing(
-                        brush, frameN, t, tThisFlipGlobal, tThisFlip, frameTolerance,  0)
+                        brush, frameN, t, tThisFlipGlobal,  0) # tThisFlip, frameTolerance, 
 
                 if buttons[0] > 0 or (t > waitClickFor and wait):  # and frameN > 1
 
@@ -535,7 +540,10 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 txt_dic['def0'].draw()
                 txt_dic['def1'].draw()
 
-                win.flip()
+                try:
+                    win.flip()
+                except:
+                    print('win IndexError')
                 if timeStamp2BSend:
                     save_timeStamps('brush_onset')
                     timeStamp2BSend = False
