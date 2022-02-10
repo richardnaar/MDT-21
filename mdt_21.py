@@ -203,7 +203,8 @@ def draw_text(text2draw, textElement, click_next, isTraining):
     textElement.text = text2draw
     textElement.pos = (0, 0)
     frameCount = 0
-    win.flip()
+    # win.flip()
+    flip_on_screen()
     brush.reset()
     brush.status = NOT_STARTED
 
@@ -220,7 +221,8 @@ def draw_text(text2draw, textElement, click_next, isTraining):
             if not isTraining:
                 click_next.draw()
             textElement.draw()
-        win.flip()
+        # win.flip()
+        flip_on_screen()
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=expInfo['escape key'])
         frameCount += 1
@@ -432,6 +434,13 @@ def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, n):
 # This monstrum will be used to run the draw routine
 
 
+def flip_on_screen():
+    try:
+        win.flip()
+    except:
+        pass
+
+
 def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
     nTrials, dif, points, outlier, trialId = extract_data_for_draw_routine(
         blockNum)
@@ -454,7 +463,8 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
         if trialNumberInDraw >= nTrials:
             brush.reset()
             brush.status = NOT_STARTED
-            win.flip()
+            flip_on_screen()
+            # win.flip()
             break
         # if it is not the end of the routine yet
         elif trialNumberInDraw < nTrials:
@@ -531,7 +541,8 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                         points[trialNumberInDraw] = round(np.max(dist), 2)
                     brush.reset()
                     brush.status = NOT_STARTED
-                    win.flip()
+                    # win.flip()
+                    flip_on_screen()
                     save_timeStamps('brush_offset_')
                     brush_offset_t = drawClock.getTime()
                     # brush_draw_dur = brush_offset_t-draw_start  # or - draw_start2?
@@ -548,10 +559,8 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 txt_dic['def0'].draw()
                 txt_dic['def1'].draw()
 
-                try:
-                    win.flip()
-                except:
-                    print('win IndexError')
+                # win.flip()
+                flip_on_screen()
                 if timeStamp2BSend:
                     save_timeStamps('brush_onset')
                     timeStamp2BSend = False
@@ -789,7 +798,8 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
             rects.draw()
             if framesCount > float(expInfo['frameRate'])/3:
                 circles.draw()
-            win.flip()
+            # win.flip()
+            flip_on_screen()
             t = drawClock.getTime()
             if timeStamp2BSend:
                 save_timeStamps('fb_onset_')
@@ -862,7 +872,8 @@ def insert_text(txt):
         buttons = mouse.getPressed()
         txt_dic['def0'].draw()
         box_text.draw()
-        win.flip()
+        # win.flip()
+        flip_on_screen()
     thisExp.addData('odd', box_text.text)
 
 
@@ -886,7 +897,8 @@ while runExperiment and (len(theseKeys) < 1):
         insert_text(odd_text)  # present text box
         txt_dic['def0'].text = end_text  # goodbye
         txt_dic['def0'].draw()
-        win.flip()
+        # win.flip()
+        flip_on_screen()
         core.wait(2)
         runExperiment = False  # Yep, over!
     # Not the end of the experiment yet
@@ -894,7 +906,8 @@ while runExperiment and (len(theseKeys) < 1):
         isTraining, nSelfs, intro_text = extract_data_for_main(trialNumber)
 
         # Filip before next trial
-        win.flip()
+        # win.flip()
+        flip_on_screen()
         draw_text(intro_text, txt_dic['def0'],
                   click_next, isTraining)
         # Run draw routine
