@@ -3,8 +3,6 @@
 # %% IMPORT MODULES
 # Additional modules will be loaded further into the script in relation
 # to the eye-tracking and sound presentation
-# brush_start_time: kui reaalselt vajutas
-# brush_draw_dur: pärast seda kui reaalselt vajutas
 # meeldetuletus, veendu, et näeksid enda silmi anduri peegelduses
 
 
@@ -580,7 +578,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 check_quit()
 
         line_len_tol = 1-float(expInfo['length tolerance percent'])/100
-        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < sum(length)*line_len_tol or dur > 8) and trialRepeatCount < 5:
+        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < sum(length)*line_len_tol or dur > 8) and trialRepeatCount < 2:
             brush.reset()
             brush.status = NOT_STARTED
             draw_text('Saad uue katse!',
