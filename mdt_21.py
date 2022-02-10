@@ -3,7 +3,6 @@
 # %% IMPORT MODULES
 # Additional modules will be loaded further into the script in relation
 # to the eye-tracking and sound presentation
-# laseb edasi, kui ki on palju kordi teinud
 # brush_start_time: kui reaalselt vajutas
 # brush_draw_dur: pärast seda kui reaalselt vajutas
 # meeldetuletus, veendu, et näeksid enda silmi anduri peegelduses
@@ -445,7 +444,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
 
     # reset timers
     t, waitClickFor, duration = 0, 5, float('inf')
-
+    trialRepeatCount = 0
     while nTrials:
         timeStamp2BSend, trigger2BSend = True, True
         mouse = event.Mouse(win=win)
@@ -504,8 +503,11 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                         wait = False
                         for line in lines:
                             line.setAutoDraw(False)
+
                     # hide lines
                     if buttons[0] > 0:  # and not hovering(click_next, mouse)
+                        if not button_pressed:
+                            draw_start2 = drawClock.getTime()
                         button_pressed = True
                         # Cartesian distance from point to line segment
                         if len(mouse.x):
@@ -532,8 +534,10 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                     win.flip()
                     save_timeStamps('brush_offset_')
                     brush_offset_t = drawClock.getTime()
-                    brush_draw_dur = brush_offset_t-draw_start
-                    brush_start_time = draw_start-line_fliped_on_screen_t
+                    # brush_draw_dur = brush_offset_t-draw_start  # or - draw_start2?
+                    # brush_start_time = draw_start-line_fliped_on_screen_t
+                    brush_draw_dur = brush_offset_t-draw_start2
+                    brush_start_time = draw_start2-line_fliped_on_screen_t
                     break
 
                 if not wait:
@@ -567,7 +571,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 check_quit()
 
         line_len_tol = 1-float(expInfo['length tolerance percent'])/100
-        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < sum(length)*line_len_tol or dur > 8):
+        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < sum(length)*line_len_tol or dur > 8) and trialRepeatCount < 5:
             brush.reset()
             brush.status = NOT_STARTED
             draw_text('Saad uue katse!',
@@ -576,10 +580,10 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
             trialRepeat = True
             draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat,
                            dif, outlier, start, end, mouse.x, mouse.y, length, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs)
-
+            trialRepeatCount += 1
         else:
             if trialNumberInDraw < nTrials:
-                trialRepeat = False
+                trialRepeat, trialRepeatCount = False, 0
                 draw_save_data(block, nTrials, trialNumberInDraw, trialRepeat,
                                dif, outlier, start, end, mouse.x, mouse.y, length, dist, brush_draw_dur, brush_start_time, isTraining, trialId, nSelfs)
             trialNumberInDraw += 1
