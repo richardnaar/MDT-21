@@ -406,27 +406,14 @@ def extract_data_for_draw_routine(blockNum):
 
 
 # tThisFlip, frameTolerance
-def prepare_elements_for_drawing(elementName, frameN, t, tThisFlipGlobal, n):
+def prepare_elements_for_drawing(elementName, n):
     if n:
         for i in range(n):
             # and tThisFlip >= 0.0-frameTolerance
             if elementName[i].status == NOT_STARTED:
-                # keep track of start time/frame for later
-                # elementName[i].frameNStart = frameN  # exact frame index
-                # # local t and not account for scr refresh
-                # elementName[i].tStart = t
-                # # on global time
-                # elementName[i].tStartRefresh = tThisFlipGlobal
-                # # time at next scr refresh
-                # win.timeOnFlip(elementName[i], 'tStartRefresh')
                 elementName[i].setAutoDraw(True)
     else:
         if elementName.status == NOT_STARTED:  # and tThisFlip >= 0.0-frameTolerance
-            # elementName.frameNStart = frameN  # exact frame index
-            # elementName.tStart = t  # local t and not account for scr refresh
-            # elementName.tStartRefresh = tThisFlipGlobal  # on global time
-            # # time at next scr refresh
-            # win.timeOnFlip(elementName, 'tStartRefresh')
             elementName.setAutoDraw(True)
 
 # This monstrum will be used to run the draw routine
