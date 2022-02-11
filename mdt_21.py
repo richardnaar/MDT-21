@@ -4,7 +4,7 @@
 # Additional modules will be loaded further into the script in relation
 # to the eye-tracking and sound presentation
 # meeldetuletus, veendu, et näeksid enda silmi anduri peegelduses
-
+# mida teha kui ei leia  värskendussagedust
 
 from __future__ import absolute_import, division
 import validation as val  # used for calibration and validation
@@ -92,9 +92,9 @@ aspect = win.size[0]/win.size[1]
 # Store frame rate of monitor if we can measure it
 expInfo['frameRate'] = win.getActualFrameRate()
 if expInfo['frameRate'] != None:
-    frameDur = 1.0 / round(expInfo['frameRate'])
+    frameRate = round(expInfo['frameRate'])
 else:
-    frameDur = 1.0 / 60.0  # could not measure, so guess
+    frameRate = 60  # could not measure, so guess
 
 # Clocks
 drawClock = core.Clock()
@@ -783,10 +783,10 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
             thisExp.addData('points', y_circles)
             break
         buttons = mouse.getPressed()
-        if 'harjutuspl' in txt and framesCount > float(expInfo['frameRate']):
+        if 'harjutuspl' in txt and framesCount > frameRate:
             arrow1.draw()
             arrow2.draw()
-        if not sum(buttons) or framesCount < float(expInfo['frameRate'])*3:
+        if not sum(buttons) or framesCount < frameRate*3:
             gauss.draw()
             txt_dic['def0'].draw()
             txt_dic['def1'].draw()
@@ -794,7 +794,7 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
             if expInfo['disp cond']:
                 txt_dic['def3'].draw()
             rects.draw()
-            if framesCount > float(expInfo['frameRate'])/3:
+            if framesCount > frameRate/3:
                 circles.draw()
             # win.flip()
             flip_on_screen()
@@ -808,11 +808,11 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
                 sound_trigger(event_name)
                 trigger2BSend = False
                 thisExp.addData('fb_start_trig', 't-'+event_name)
-            if framesCount > float(expInfo['frameRate'])*3 and not isTraining:
+            if framesCount > frameRate*3 and not isTraining:
                 click_next.draw()
             check_quit()
             framesCount += 1
-        elif not isTraining and sum(buttons) and hovering(click_next, mouse) and framesCount > float(expInfo['frameRate'])*3:
+        elif not isTraining and sum(buttons) and hovering(click_next, mouse) and framesCount > frameRate*3:
             save_timeStamps('fb_offset_')
             thisExp.addData('fb_RT', t-fb_satrt)
             thisExp.addData('points', y_circles)
