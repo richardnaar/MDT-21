@@ -4,7 +4,6 @@
 # Additional modules will be loaded further into the script in relation
 # to the eye-tracking and sound presentation
 # meeldetuletus, veendu, et näeksid enda silmi anduri peegelduses
-# mida teha kui ei leia  värskendussagedust
 
 from __future__ import absolute_import, division
 import validation as val  # used for calibration and validation
