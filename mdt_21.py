@@ -480,12 +480,12 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 # number of completed frames (so 0 is the first frame)
                 frameN = frameN + 1
                 prepare_elements_for_drawing(
-                    lines, frameN, t, tThisFlipGlobal,  n)  # tThisFlip, frameTolerance,
+                    lines, n)  # tThisFlip, frameTolerance,
 
                 # *brush* updates
                 if brush.status == NOT_STARTED:  # and tThisFlip >= 0.0-frameTolerance:
                     prepare_elements_for_drawing(
-                        brush, frameN, t, tThisFlipGlobal,  0)  # tThisFlip, frameTolerance,
+                        brush, 0)  # tThisFlip, frameTolerance,
 
                 if buttons[0] > 0 or (t > waitClickFor and wait):  # and frameN > 1
 
