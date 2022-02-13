@@ -43,7 +43,7 @@ expName = os.path.basename(__file__)
 expInfo = {'participant': 'test', 'error tolerance': 20, 'length tolerance percent': 40,
            'fb mode': ['type A', 'type B'],  'triggers': '1', 'escape key': 'escape', 'disp cond': 0,
            'dif baseline min': -0.1, 'easy baseline min': 0.05, 'point uncertinty': 0.1, 'outlier distance': 0.086,
-           'easy lines n': 4, 'diff lines n': 6, 'line length min': 0.15, 'line length max': 0.25, 'tracker': list(['tobii', 'mouse', 'none'])}
+           'easy lines n': 4, 'diff lines n': 6, 'line length min': 0.15, 'line length max': 0.25, 'tracker': list(['tobii', 'mouse', 'none']), 'fb dur': 5}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -772,7 +772,8 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
         if 'harjutuspl' in txt and framesCount > frameRate:
             arrow1.draw()
             arrow2.draw()
-        if not sum(buttons) or framesCount < frameRate*3:
+        # if not sum(buttons) or framesCount < frameRate*3: # click next v
+        if not t-fb_satrt >= expInfo['fb dur']:
             gauss.draw()
             txt_dic['def0'].draw()
             txt_dic['def1'].draw()
@@ -780,9 +781,8 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
             if expInfo['disp cond']:
                 txt_dic['def3'].draw()
             rects.draw()
-            if framesCount > frameRate/3:
+            if timeStamp2BSend == False and t-fb_satrt >= 0.333:
                 circles.draw()
-            # win.flip()
             flip_on_screen()
             t = drawClock.getTime()
             if timeStamp2BSend:
@@ -794,13 +794,16 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
                 sound_trigger(event_name)
                 trigger2BSend = False
                 thisExp.addData('fb_start_trig', 't-'+event_name)
-            if framesCount > frameRate*3 and not isTraining:
-                click_next.draw()
+            # if framesCount > frameRate*3 and not isTraining: # click next v
+            #     click_next.draw()
             check_quit()
             framesCount += 1
-        elif not isTraining and sum(buttons) and hovering(click_next, mouse) and framesCount > frameRate*3:
+        # elif not isTraining and sum(buttons) and hovering(click_next, mouse) and framesCount > frameRate*3: # click next v
+        #     save_timeStamps('fb_offset_')
+        #     thisExp.addData('fb_RT', t-fb_satrt)
+        #     thisExp.addData('points', y_circles)
+        elif not isTraining and t-fb_satrt >= expInfo['fb dur']:
             save_timeStamps('fb_offset_')
-            thisExp.addData('fb_RT', t-fb_satrt)
             thisExp.addData('points', y_circles)
             if block_n > 0:
                 event_name = '0'+'1' + str(dif) + outlier_str[out]
