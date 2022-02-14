@@ -780,7 +780,7 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
             txt_dic['def2'].draw()
             if expInfo['disp cond']:
                 txt_dic['def3'].draw()
-            rects.draw()
+            # rects.draw()
             if timeStamp2BSend == False and t-fb_satrt >= 0.5:
                 circles.draw()
             flip_on_screen()
@@ -868,7 +868,7 @@ def insert_text(txt):
 
 # THIS IS WHERE THE EXPERIMENT STARTS
 # Set win to fullscreen
-# win.fullscr = True
+win.fullscr = True
 
 # Inisialize some variables
 trialNumber = 0  # will keep track on how many blocks
