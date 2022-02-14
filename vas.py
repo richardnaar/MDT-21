@@ -1,3 +1,9 @@
+def flip_on_screen():
+    try:
+        win.flip()
+    except:
+        pass
+
 
 def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question_text, low, high):
     # mouse = event.Mouse(win=win)
@@ -84,11 +90,13 @@ def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question
                 slf_set.setPos(mx, log=False)
                 slf_set.draw()
 
-                win.flip()
+                # win.flip()
+                flip_on_screen()
 
             else:
                 core.quit()
-        win.flip()
+        flip_on_screen()
+        # win.flip()
 
         # save the rating and RT
         thisExp.addData('vas_response', VAS_resp)
