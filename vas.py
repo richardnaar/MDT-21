@@ -1,4 +1,4 @@
-def flip_on_screen():
+def flip_on_screen(win):
     try:
         win.flip()
     except:
@@ -91,11 +91,11 @@ def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question
                 slf_set.draw()
 
                 # win.flip()
-                flip_on_screen()
+                flip_on_screen(win)
 
             else:
                 core.quit()
-        flip_on_screen()
+        flip_on_screen(win)
         # win.flip()
 
         # save the rating and RT
