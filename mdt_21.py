@@ -773,7 +773,7 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
             arrow1.draw()
             arrow2.draw()
         # if not sum(buttons) or framesCount < frameRate*3: # click next v
-        if not t-fb_satrt >= expInfo['fb dur']:
+        if not t-fb_satrt >= expInfo['fb dur'] + 0.5:
             gauss.draw()
             txt_dic['def0'].draw()
             txt_dic['def1'].draw()
@@ -802,7 +802,9 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
         #     save_timeStamps('fb_offset_')
         #     thisExp.addData('fb_RT', t-fb_satrt)
         #     thisExp.addData('points', y_circles)
-        elif not isTraining and t-fb_satrt >= expInfo['fb dur']+0.5:
+        #
+        # + 0.5
+        elif not isTraining and t-fb_satrt >= expInfo['fb dur'] + 0.5:
             save_timeStamps('fb_offset_')
             thisExp.addData('points', y_circles)
             if block_n > 0:
@@ -866,7 +868,7 @@ def insert_text(txt):
 
 # THIS IS WHERE THE EXPERIMENT STARTS
 # Set win to fullscreen
-win.fullscr = True
+# win.fullscr = True
 
 # Inisialize some variables
 trialNumber = 0  # will keep track on how many blocks
