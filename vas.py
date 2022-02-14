@@ -1,5 +1,4 @@
 def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question_text, low, high):
-    # mouse = event.Mouse(win=win)
     scale_width = 0.5
     scale_y_pos = -0.1
     text_h = 0.04
