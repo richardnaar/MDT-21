@@ -186,10 +186,10 @@ for txtStim in range(4):
                                                   languageStyle='LTR', depth=-1.0)
 
 # Additional text to blocks table
-end_text = 'Suurt tänu osalemast! Eksperiment on läbi.'
-odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Jätkamiseks vajuta paremat hiireklahvi...)'
+end_text = 'Suur tänu osalemast! Eksperiment on läbi.'
+odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Rea vahetamiseks vajuta palun ENTER ja \n katse lõpetamiseks vajuta palun paremat hiireklahvi...)'
 
-reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.'
+reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.\n\n Jälgi palun, et näeksid ka enda silmade peegeldust anduri keskosas.'
 
 # Used to draw text in the draw and main loops
 
@@ -200,7 +200,6 @@ def draw_text(text2draw, textElement, click_next, isTraining):
     textElement.text = text2draw
     textElement.pos = (0, 0)
     frameCount = 0
-    # win.flip()
     flip_on_screen()
     brush.reset()
     brush.status = NOT_STARTED
@@ -218,7 +217,6 @@ def draw_text(text2draw, textElement, click_next, isTraining):
             if not isTraining:
                 click_next.draw()
             textElement.draw()
-        # win.flip()
         flip_on_screen()
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=expInfo['escape key'])
@@ -408,7 +406,6 @@ def extract_data_for_draw_routine(blockNum):
 def prepare_elements_for_drawing(elementName, n):
     if n:
         for i in range(n):
-            # and tThisFlip >= 0.0-frameTolerance
             if elementName[i].status == NOT_STARTED:
                 elementName[i].setAutoDraw(True)
     else:
@@ -429,7 +426,6 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
     nTrials, dif, points, outlier, trialId = extract_data_for_draw_routine(
         blockNum)
     dist_travelled, block = 0, 0
-    # frameTolerance = 0.001  # how close to onset before 'same' frame
     trialNumberInDraw, trialRepeat = 0, False
 
     txt_dic['def0'].pos = text_pos['distance']
@@ -441,14 +437,12 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
     while nTrials:
         timeStamp2BSend, trigger2BSend = True, True
         mouse = event.Mouse(win=win)
-        # kui jookseb kokku, siis list([0]) *kuigi selle häda on selles, et siis läheb hiiretrajektoori pikkuse arvutamine sassi
         mouse.x, mouse.y = list([0]), list([0])
         # if it is the end of the routine loop
-        if trialNumberInDraw >= nTrials:
+        if trialNumberInDraw == nTrials:  # >=
             brush.reset()
             brush.status = NOT_STARTED
             flip_on_screen()
-            # win.flip()
             break
         # if it is not the end of the routine yet
         elif trialNumberInDraw < nTrials:
@@ -483,9 +477,9 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                     lines, n)  # tThisFlip, frameTolerance,
 
                 # *brush* updates
-                if brush.status == NOT_STARTED:  # and tThisFlip >= 0.0-frameTolerance:
+                if brush.status == NOT_STARTED:  #
                     prepare_elements_for_drawing(
-                        brush, 0)  # tThisFlip, frameTolerance,
+                        brush, 0)  #
 
                 if buttons[0] > 0 or (t > waitClickFor and wait):  # and frameN > 1
 
@@ -499,7 +493,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                             line.setAutoDraw(False)
 
                     # hide lines
-                    if buttons[0] > 0:  # and not hovering(click_next, mouse)
+                    if buttons[0] > 0:
                         if not button_pressed:
                             draw_start2 = drawClock.getTime()
                         button_pressed = True
@@ -516,7 +510,6 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                                 (mouse.x[-2]-mouse.x[-1]) ** 2 + (mouse.y[-2]-mouse.y[-1]) ** 2)
                         else:
                             dist_travelled = 0
-                    # and hovering(click_next, mouse):
                 else:
                     for line in lines:
                         line.contrast = (waitClickFor-t)/waitClickFor
@@ -525,12 +518,9 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                         points[trialNumberInDraw] = round(np.max(dist), 2)
                     brush.reset()
                     brush.status = NOT_STARTED
-                    # win.flip()
                     flip_on_screen()
                     save_timeStamps('brush_offset_')
                     brush_offset_t = drawClock.getTime()
-                    # brush_draw_dur = brush_offset_t-draw_start  # or - draw_start2?
-                    # brush_start_time = draw_start-line_fliped_on_screen_t
                     brush_draw_dur = brush_offset_t-draw_start2
                     brush_start_time = draw_start2-line_fliped_on_screen_t
                     break
@@ -543,14 +533,13 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 txt_dic['def0'].draw()
                 txt_dic['def1'].draw()
 
-                # win.flip()
                 flip_on_screen()
                 if timeStamp2BSend:
                     save_timeStamps('brush_onset')
                     timeStamp2BSend = False
                     line_fliped_on_screen_t = drawClock.getTime()
 
-                if trialNumberInDraw <= nTrials:  # NB väiksem kui
+                if trialNumberInDraw <= nTrials:
                     block = global_n-start_idx+1
                     if block < 0:
                         block = 0  # training blocks
@@ -564,7 +553,7 @@ def draw_routine(blockNum, lines, global_n, isTraining, nSelfs):
                 check_quit()
 
         line_len_tol = 1-float(expInfo['length tolerance percent'])/100
-        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < sum(length)*line_len_tol or dur > 8) and trialRepeatCount < 2:
+        if (np.max(dist)*100 > float(expInfo['error tolerance']) or dist_travelled < sum(length)*line_len_tol or dur > 8) and trialRepeatCount < 4:
             brush.reset()
             brush.status = NOT_STARTED
             draw_text('Saad uue katse!',
@@ -683,29 +672,18 @@ if n_bars == 4:
     # List of box positions
     xys_circles = [[ecc[1]*-1, ys[0]], [ecc[0]*-1, ys[1]],
                    [ecc[0], ys[2]], [ecc[1], ys[3]]]
-    xys_rects = [(ecc[1]*-1, 0), (ecc[0]*-1, 0), (ecc[0], 0), (ecc[1], 0)]
 
 elif n_bars == 1:
     xys_circles = [[0, ys[0]], [0, ys[1]], [0, ys[2]], [0, ys[3]]]
-    xys_rects = (0, 0)
 
 # Array of circles
-circles = visual.ElementArrayStim(win, name='rects', fieldPos=field_pos, fieldSize=(1, 1),
+circles = visual.ElementArrayStim(win, name='points', fieldPos=field_pos, fieldSize=(1, 1),
                                   fieldShape='square', nElements=4, sizes=(0.1*aspect, 0.03), xys=xys_circles,
                                   colors=([1.0, 1.0, 1.0]), colorSpace='rgb', opacities=1, oris=0,
                                   sfs=0, contrs=[1, 1, 1, 1], phases=0, elementTex='sin',
                                   elementMask='gauss', texRes=48, interpolate=True,
                                   autoLog=None, maskParams=None)
 
-# White vertical lines
-rects = visual.ElementArrayStim(win, name='rects', fieldPos=(0, -0.35), fieldSize=(1, 1),  # field_pos
-                                # (0.06, 0.6)
-                                # (0.02, 0.6)
-                                fieldShape='square', nElements=n_bars, sizes=(0.01, 0.02), xys=xys_rects,
-                                colors=([1.0, 1.0, 1.0]), colorSpace='rgb', opacities=1, oris=0,
-                                sfs=0, contrs=1, phases=0, elementTex='sqr',
-                                elementMask='none', texRes=48, interpolate=True,
-                                autoLog=None, maskParams=None)
 
 # Arrows shown in the training fb
 arrow1 = visual.ImageStim(win=win, image=pic_dir + '\\' +
@@ -732,9 +710,9 @@ def extract_data_for_fb(blockNum):
 def prepare_aesthetics_for_fb(dif, out, xys_points, txt):
     circles.colors = col_dict[col_list[dif]]
     if 'Pärast tagasiside nägemist küsitakse' in txt:
-        circles.opacities, rects.contrs = [1, 0, 0, 0], [0.5, 0.2, 0.2, 0.2]
+        circles.opacities = [1, 0, 0, 0]
     else:
-        circles.opacities, rects.contrs = 1, 0.5
+        circles.opacities = 1
     # Change the positions
     txt_dic['def0'].pos, txt_dic['def1'].pos, txt_dic['def2'].pos = text_pos['bar_high'], text_pos['bar_mid'], text_pos['bar_low']
     if expInfo['disp cond']:
@@ -765,7 +743,6 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
         # space_lisada isTraining
         if isTraining and len(theseKeys):
             save_timeStamps('fb_offset_')
-            thisExp.addData('fb_RT', t-fb_satrt)
             thisExp.addData('points', y_circles)
             break
         buttons = mouse.getPressed()
@@ -780,7 +757,6 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
             txt_dic['def2'].draw()
             if expInfo['disp cond']:
                 txt_dic['def3'].draw()
-            # rects.draw()
             if timeStamp2BSend == False and t-fb_satrt >= 0.5:
                 circles.draw()
             flip_on_screen()
@@ -794,16 +770,8 @@ def feedback(xys_points, y_circles,  blockNum, block_n, isTraining):
                 sound_trigger(event_name)
                 trigger2BSend = False
                 thisExp.addData('fb_start_trig', 't-'+event_name)
-            # if framesCount > frameRate*3 and not isTraining: # click next v
-            #     click_next.draw()
             check_quit()
             framesCount += 1
-        # elif not isTraining and sum(buttons) and hovering(click_next, mouse) and framesCount > frameRate*3: # click next v
-        #     save_timeStamps('fb_offset_')
-        #     thisExp.addData('fb_RT', t-fb_satrt)
-        #     thisExp.addData('points', y_circles)
-        #
-        # + 0.5
         elif not isTraining and t-fb_satrt >= expInfo['fb dur'] + 0.5:
             save_timeStamps('fb_offset_')
             thisExp.addData('points', y_circles)
@@ -843,9 +811,9 @@ def self_report_wrapper(nSelfs, trialNumber):
 # Prepare text box
 box_text = visual.TextBox2(
     win, text='Sisesta tekst siia...', font='Open Sans',
-    pos=(0, 0),     letterHeight=0.05, size=(None, None), borderWidth=2.0,
+    pos=(0, -0.15), letterHeight=0.035, size=(1, 0.3), borderWidth=0.02,
     color='white', colorSpace='rgb', opacity=None, bold=False, italic=False,
-    lineSpacing=1.0, padding=0.0, anchor='center', fillColor=None, borderColor=None,
+    lineSpacing=1.0, padding=0.0, anchor='center', fillColor=None, borderColor=[-1, -1, -1],
     flipHoriz=False, flipVert=False, editable=True, name='text2', autoLog=False,
 )
 
@@ -861,7 +829,6 @@ def insert_text(txt):
         buttons = mouse.getPressed()
         txt_dic['def0'].draw()
         box_text.draw()
-        # win.flip()
         flip_on_screen()
     thisExp.addData('odd', box_text.text)
 
@@ -886,7 +853,6 @@ while runExperiment and (len(theseKeys) < 1):
         insert_text(odd_text)  # present text box
         txt_dic['def0'].text = end_text  # goodbye
         txt_dic['def0'].draw()
-        # win.flip()
         flip_on_screen()
         core.wait(2)
         runExperiment = False  # Yep, over!
@@ -895,7 +861,6 @@ while runExperiment and (len(theseKeys) < 1):
         isTraining, nSelfs, intro_text = extract_data_for_main(trialNumber)
 
         # Filip before next trial
-        # win.flip()
         flip_on_screen()
         draw_text(intro_text, txt_dic['def0'],
                   click_next, isTraining)
