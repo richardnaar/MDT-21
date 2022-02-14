@@ -1,10 +1,3 @@
-def flip_on_screen(win):
-    try:
-        win.flip()
-    except:
-        pass
-
-
 def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question_text, low, high):
     # mouse = event.Mouse(win=win)
     scale_width = 0.5
@@ -91,11 +84,17 @@ def present(win, thisExp, esckey, clock, visual, event, core, text_pos, question
                 slf_set.draw()
 
                 # win.flip()
-                flip_on_screen(win)
+                try:
+                    win.flip()
+                except:
+                    pass
 
             else:
                 core.quit()
-        flip_on_screen(win)
+        try:
+            win.flip()
+        except:
+            pass
         # win.flip()
 
         # save the rating and RT
