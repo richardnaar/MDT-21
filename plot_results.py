@@ -90,6 +90,7 @@ matplotlib.use('Qt5Agg')  # change this to control the plotting 'back end'
 fig, ax = pylab.subplots(1, 2)
 fig.set_figwidth(14)
 fig.set_figheight(7)
+# pylab.ylim(-3, 3)
 # fig.set_dpi(200)
 
 cols = ['red', 'blue']
@@ -113,6 +114,7 @@ for dif in data.difficulty.astype(int).unique():
                     [dif], alpha=0.5)  # label="Trial"
     ax[dif].set_xlabel("Max deviance (standardized)")
     ax[dif].set_ylabel("RT (standardized)")
+    ax[dif].set_ylim(-3, 3)
 
     leg = str()
     for i, vname in enumerate(means.columns):
@@ -122,7 +124,6 @@ for dif in data.difficulty.astype(int).unique():
         ', p: ' + str(round(cor.pvalue, 3))
 
     ax[dif].legend(title=leg, loc='upper right')
-
 
 pylab.show()
 
