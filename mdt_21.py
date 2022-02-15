@@ -189,7 +189,8 @@ for txtStim in range(4):
 end_text = 'Suur tänu osalemast! Eksperiment on läbi.'
 odd_text = 'Kui miski tundus sulle selle katse juures imelik, pane see siia kirja \n (Rea vahetamiseks vajuta palun ENTER ja \n katse lõpetamiseks vajuta palun paremat hiireklahvi...)'
 
-reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.\n\n Jälgi palun, et näeksid ka enda silmade peegeldust anduri keskosas.'
+# \n\n Jälgi palun, et näeksid ka enda silmade peegeldust anduri keskosas.
+reminder_text = '\n\nPea meeles, et oluline on nii täpsus kui kiirus.'
 
 # Used to draw text in the draw and main loops
 
