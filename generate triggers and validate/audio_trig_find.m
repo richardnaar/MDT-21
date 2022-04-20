@@ -5,7 +5,7 @@ sound_dir = 'C:\Users\Richard Naar\Documents\dok\TARU\MDT 21\sounds';
 addpath(sound_dir)
 
 % Import the file
-newData1 = importdata('11111.wav');
+newData1 = importdata('10001.wav');
 
 % Create new variables in the base workspace from those fields
 vars = fieldnames(newData1);
@@ -28,7 +28,7 @@ plot(hz(2:end), fdat(2:length(hz)) )
 raw_dir = 'C:\Users\Richard Naar\Documents\dok\TARU\MDT 21\muud\sounds';
 addpath(raw_dir)
 % Import the file
-newData1 = importdata('test1.wav');
+newData1 = importdata('ki01.wav');
 
 % Create new variables in the base workspace from those fields.
 vars = fieldnames(newData1);
@@ -73,7 +73,8 @@ for ii = 1:length(eindx)
 %     plot(fdat)
 %% find triggers
 
-    raw_trig = find(abs(fdat(2:length(hz)/2))>0.2);
+%     raw_trig = find(abs(fdat(2:length(hz)/2))>0.2); 
+    raw_trig = find(fdat(2:length(hz)/2)>0.2); 
     event = zeros(1, length(raw_trig));
     for f_ind = 1:length(raw_trig)
         idx = dsearchn(trig', raw_trig(f_ind));
@@ -82,6 +83,7 @@ for ii = 1:length(eindx)
         end
     end
     event = unique(event);
+    % py
     event_i = zeros(1, length(trig));
     for ei = 1:length(event)
         idx = dsearchn(trig', event(ei));
@@ -116,4 +118,3 @@ for ii = 1:length(eindx)
 
     pause()
 end
-
